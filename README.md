@@ -1,5 +1,6 @@
 # zenswebdev-frontend-react
 This project is created on purposes to explore the possibilities of writing a frontend web application with react typescript and it will be an assisting template for my future career as a developer..
+<<<<<<< HEAD
 
 # Getting Started with Create React App
 
@@ -47,3 +48,5 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+=======
+>>>>>>> c33b32b0b00a0412238412dbc3f2af435fbcd53a
