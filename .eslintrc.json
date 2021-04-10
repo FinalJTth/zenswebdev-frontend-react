@@ -30,13 +30,27 @@
         "@typescript-eslint",
         "prettier"
     ],
+    "globals": {
+        "React": true,
+        "google": true,
+        "mount": true,
+        "mountWithRouter": true,
+        "shallow": true,
+        "shallowWithRouter": true,
+        "context": true,
+        "expect": true,
+        "jsdom": true,
+        "JSX": true
+    },
     "rules": {
         "prettier/prettier": [
-            "error",
+            "warn",
             {
                 "endOfLine":"auto"
             }
         ],
+        "no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
+        "react/no-unused-prop-types": ["warn"],
         "no-use-before-define": "off",
         "@typescript-eslint/no-use-before-define": ["error"],
         "react/jsx-filename-extension": [
@@ -50,6 +64,9 @@
                 ]
             }
         ],
+        "react/jsx-props-no-spreading": ["off"],
+        "react/destructuring-assignment": ["off"],
+        "react/require-default-props": ["off"],
         "import/extensions": [
             "error",
             "ignorePackages",
