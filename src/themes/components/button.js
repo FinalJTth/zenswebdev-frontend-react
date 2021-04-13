@@ -1,46 +1,46 @@
 const buttonStyle = {
   baseStyle: (props) => ({
-    fontWeight: (props && props.fontWeight) || 'semibold'
+    fontWeight: (props && props.fontWeight) || 'semibold',
   }),
 
   sizes: {
     noPadding: {},
     sm: {
       fontSize: '12px',
-      px: '10px'
+      px: '10px',
     },
     md: {
       fontSize: '16px',
-      px: '15px'
+      px: '15px',
     },
     lg: {
       fontSize: '20px',
-      px: '20px'
+      px: '20px',
     },
     xl: {
       fontSize: '24px',
-      px: '25px'
+      px: '25px',
     },
     solidsm: {
       fontSize: '16px',
       px: '14px',
-      h: '30px'
+      h: '30px',
     },
     solidmd: {
       fontSize: '18px',
       px: '18px',
-      h: '36px'
+      h: '36px',
     },
     solidlg: {
       fontSize: '20px',
       px: '22px',
-      h: '42px'
+      h: '42px',
     },
     solidxl: {
       fontSize: '22px',
       px: '26px',
-      h: '48px'
-    }
+      h: '48px',
+    },
   },
 
   variants: {
@@ -54,11 +54,11 @@ const buttonStyle = {
           '0 0 1px 2px rgba(88, 144, 255, .75), 0 1px 1px rgba(0, 0, 0, .15)',
         bg: 'rgba(178, 245, 234, 0.2)',
         borderColor: 'teal.500',
-        borderWidth: '0px'
+        borderWidth: '0px',
       },
       _active: {
-        bg: 'rgba(129, 230, 217, 0.3)'
-      }
+        bg: 'rgba(129, 230, 217, 0.3)',
+      },
     },
 
     solid: (props) => ({
@@ -70,11 +70,11 @@ const buttonStyle = {
           '0 0 1px 2px rgba(88, 144, 255, .75), 0 1px 1px rgba(0, 0, 0, .15)',
         bg: 'teal.600',
         borderColor: '#bec3c9',
-        borderWidth: '0px'
+        borderWidth: '0px',
       },
       _active: {
-        bg: 'teal.700'
-      }
+        bg: 'teal.700',
+      },
     }),
 
     ghost: {
@@ -85,19 +85,19 @@ const buttonStyle = {
           '0 0 1px 2px rgba(88, 144, 255, .75), 0 1px 1px rgba(0, 0, 0, .15)',
         bg: 'rgba(178, 245, 234, 0.1)',
         borderColor: 'teal.500',
-        borderWidth: '0px'
+        borderWidth: '0px',
       },
       _active: {
-        bg: 'rgba(129, 230, 217, 0.3)'
-      }
+        bg: 'rgba(129, 230, 217, 0.3)',
+      },
     },
 
     link: (props) => ({
       fontWeight: (props && props.fontWeight) || 'normal',
       _hover: { fontWeight: 'semibold', textDecoration: 'underline' },
       _focus: {
-        boxShadow: ''
-      }
+        boxShadow: '',
+      },
     }),
 
     linkHeader: (props) => ({
@@ -105,19 +105,19 @@ const buttonStyle = {
       fontWeight: (props && props.fontWeight) || 'semibold',
       _hover: {},
       _focus: {
-        boxShadow: ''
-      }
+        boxShadow: '',
+      },
     }),
 
     unstyled: (props) => ({
-      fontWeight: (props && props.fontWeight) || 'normal'
-    })
+      fontWeight: (props && props.fontWeight) || 'normal',
+    }),
   },
   // The default size and variant values
   defaultProps: {
     size: 'solidmd',
-    variant: 'solid'
-  }
+    variant: 'solid',
+  },
 };
 
 export default buttonStyle;

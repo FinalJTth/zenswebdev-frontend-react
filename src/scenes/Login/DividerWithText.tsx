@@ -3,7 +3,7 @@ import {
   Divider,
   Flex,
   FlexProps,
-  useColorModeValue as mode
+  useColorModeValue as mode,
 } from '@chakra-ui/react';
 import * as React from 'react';
 

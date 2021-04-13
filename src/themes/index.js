@@ -12,9 +12,9 @@ const overrides = {
   // borders,
   // Other foundational style overrides go here
   components: {
-    Button
+    Button,
     // Other components go here
-  }
+  },
 };
 
 export default extendTheme(overrides);

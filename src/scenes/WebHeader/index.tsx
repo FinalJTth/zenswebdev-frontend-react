@@ -11,13 +11,13 @@ import {
   Button,
   Link,
   LinkBox,
-  LinkOverlay
+  LinkOverlay,
 } from '@chakra-ui/react';
 
 type WebHeaderProps = any;
 
 const WebHeader: React.FC<WebHeaderProps> = (
-  props: WebHeaderProps
+  props: WebHeaderProps,
 ): JSX.Element => {
   const { test } = props;
   return (

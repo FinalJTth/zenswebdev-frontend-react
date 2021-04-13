@@ -10,7 +10,7 @@ import {
   InputRightElement,
   useDisclosure,
   useMergeRefs,
-  useColorModeValue as mode
+  useColorModeValue as mode,
 } from '@chakra-ui/react';
 import * as React from 'react';
 import { HiEye, HiEyeOff } from 'react-icons/hi';
@@ -68,7 +68,7 @@ const PasswordField = React.forwardRef<HTMLInputElement, InputProps>(
         </InputGroup>
       </FormControl>
     );
-  }
+  },
 );
 
 PasswordField.displayName = 'PasswordField';

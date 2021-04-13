@@ -5,7 +5,7 @@ import {
   SimpleGrid,
   Text,
   useColorModeValue as mode,
-  VisuallyHidden
+  VisuallyHidden,
 } from '@chakra-ui/react';
 import * as React from 'react';
 import { FaFacebook, FaGoogle, FaGithub } from 'react-icons/fa';

@@ -2,7 +2,7 @@ import { chakra, HTMLChakraProps, useToken } from '@chakra-ui/react';
 import * as React from 'react';
 
 const Logo: React.FC<any> = (
-  props: HTMLChakraProps<'svg'> & { iconColor?: string }
+  props: HTMLChakraProps<'svg'> & { iconColor?: string },
 ) => {
   const { iconColor = 'currentColor', ...rest } = props;
   const color = useToken('colors', iconColor);
