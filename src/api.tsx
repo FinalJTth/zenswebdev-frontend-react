@@ -1,17 +1,30 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
+import localForage from 'localforage';
+import * as dotenv from 'dotenv';
+import JSON5 from 'json5';
+import { buildGraphql } from './utils';
 
-const serverBaseUrl = 'http://localhost:9000/';
+const success = dotenv.config();
+console.warn(success);
 
-const axiosBaseURL = axios.create({
+const serverBaseUrl = 'https://localhost:9000/';
+const serverServiceUrl = 'https://localhost:5000';
+
+export const axiosBaseURL = axios.create({
   baseURL: serverBaseUrl,
 });
 
+export const axiosServiceURL = axios.create({
+  baseURL: serverServiceUrl,
+});
+
 axiosBaseURL.interceptors.request.use(
-  (req) => {
-    const token = localStorage.getItem('access_token');
+  async (req: Record<string, any>) => {
+    const token = await localForage.getItem('access_token');
     if (token) {
       req.headers.Authorization = `Bearer ${token}`;
     }
+    // req.headers.ReactKey = process.env.REACT_APP_API_KEY;
     console.log(`REQUEST : ${req.method} ${req.url}\nTOKEN : ${token}`);
 
     /*
@@ -25,7 +38,7 @@ axiosBaseURL.interceptors.request.use(
     console.log('REQUEST :', req);
     return req;
   },
-  (err) => {
+  (err: Record<string, any>) => {
     // if (err.response.status === 500) {
     //   return new Error(`Backend Server is down`);
     // }
@@ -102,13 +115,22 @@ const handleGql = (pObject: string | Record<string, any>, type: string) => {
   return returngql;
 };
 
-const axiosGqlQuery = async (pQuery: string | Record<string, any>) => {
-  const query = handleGql(pQuery, 'query');
+const axiosGqlQuery = async (
+  overloadingParam: string, // resolver or query string
+  parameters?: Record<string, any> | string,
+  returnValues?: Array<any> | string,
+) => {
+  const query = parameters
+    ? buildGraphql('query', overloadingParam, parameters, returnValues)
+    : overloadingParam;
   return axiosBaseURL
-    .post('/graphql', JSON.stringify(query), gqlHeader)
-    .then((response) => {
-      console.log(response.data.data);
-      return response.data.data;
+    .post('/graphql', JSON.stringify({ query }), gqlHeader)
+    .then((response: Record<string, any>) => {
+      if (response.data.errors && response.data.errors.length > 0) {
+        const { exception } = response.data.errors[0].extensions;
+        throw new Error(`${exception._stack}`);
+      }
+      return response.data;
     });
 };
 
@@ -136,4 +158,43 @@ const axiosGqlMutation = async (pMutationString: string) => {
   return axiosBaseURL.post('/graphql', JSON.stringify(mutation), gqlHeader);
 };
 
-export { axiosTest, axiosGqlQuery, axiosGqlMutation };
+const axiosGqlServiceQuery = async (
+  overloadingParam: string, // resolver or query string
+  parameters?: Record<string, any> | string,
+  returnValues?: Array<any> | string,
+) => {
+  const query = parameters
+    ? buildGraphql('query', overloadingParam, parameters, returnValues)
+    : overloadingParam;
+  return axiosServiceURL
+    .post('/graphql', JSON.stringify({ query }), gqlHeader)
+    .then((response: Record<string, any>) => {
+      if (response.data.errors && response.data.errors.length > 0) {
+        if (response.data.errors[0].extensions) {
+          const { exception } = response.data.errors[0].extensions;
+          throw new Error(`${exception._stack}`);
+        } else {
+          let message = '';
+          response.data.errors.map((error: any, index: number) => {
+            let locations = '';
+            if (error.locations) {
+              error.locations.map(
+                (location: Record<string, any>, locationIndex: number) => {
+                  locations += `\tat ${locationIndex} ${JSON.stringify(
+                    location,
+                  )}\n`;
+                  return location;
+                },
+              );
+            }
+            message += `${index} ${error.message}\n${locations}`;
+            return error;
+          });
+          throw new Error(message);
+        }
+      }
+      return response.data;
+    });
+};
+
+export { axiosTest, axiosGqlQuery, axiosGqlMutation, axiosGqlServiceQuery };
