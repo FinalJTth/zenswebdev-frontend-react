@@ -9,11 +9,13 @@ import {
   Route,
   Switch,
   Link as ReactLink,
-  useHistory
+  useHistory,
 } from 'react-router-dom';
 import Theme from './themes';
 import Home from './scenes/Home';
 import Login from './scenes/Login';
+import Signup from './scenes/Signup';
+import Playground from './Playground';
 import WebHeader from './scenes/WebHeader';
 
 /*
@@ -41,12 +43,12 @@ function App() {
 
 const Router: React.FC<any> = (): JSX.Element => {
   return (
-    <BrowserRouter>
-      <Switch>
-        <Route exact path="/" component={Home} />
-        <Route path="/login" component={Login} />
-      </Switch>
-    </BrowserRouter>
+    <Switch>
+      <Route exact path="/" component={Home} />
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={Signup} />
+      <Route path="/playground" component={Playground} />
+    </Switch>
   );
 };
 

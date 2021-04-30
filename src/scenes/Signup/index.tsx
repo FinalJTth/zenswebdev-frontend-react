@@ -10,10 +10,10 @@ import {
 import * as React from 'react';
 import { FaFacebook, FaGoogle, FaGithub } from 'react-icons/fa';
 import Logo from '../../components/Logo';
-import LoginForm from './LoginForm';
+import SignupForm from './SignupForm';
 import DividerWithText from '../../components/DividerWithText';
 
-export const Login: React.FC<any> = (): JSX.Element => {
+export const Register: React.FC<any> = (): JSX.Element => {
   return (
     <Box
       bg={mode('gray.50', 'inherit')}
@@ -31,19 +31,19 @@ export const Login: React.FC<any> = (): JSX.Element => {
           />
         </Box>
         <Heading mt="6" textAlign="center" size="xl" fontWeight="extrabold">
-          Sign in to your account
+          Getting started with us
         </Heading>
         <Text mt="4" align="center" maxW="md" fontWeight="medium">
-          <span>Don&apos;t have an account?</span>
+          <span>Already have an account ?</span>
           <Box
             as="a"
             marginStart="1"
-            href="/signup"
+            href="/login"
             color={mode('blue.600', 'blue.200')}
             _hover={{ color: 'blue.600' }}
             display={{ base: 'block', sm: 'revert' }}
           >
-            Create your account
+            Login
           </Box>
         </Text>
       </Box>
@@ -54,19 +54,19 @@ export const Login: React.FC<any> = (): JSX.Element => {
           px={{ base: '4', md: '10' }}
           shadow="base"
         >
-          <LoginForm />
-          <DividerWithText mt="6">or continue with</DividerWithText>
+          <SignupForm />
+          <DividerWithText mt="6">or sign up with</DividerWithText>
           <SimpleGrid mt="6" columns={3} spacing="3">
             <Button color="currentColor" variant="outline">
-              <VisuallyHidden>Login with Facebook</VisuallyHidden>
+              <VisuallyHidden>Sign up with Facebook</VisuallyHidden>
               <FaFacebook />
             </Button>
             <Button color="currentColor" variant="outline">
-              <VisuallyHidden>Login with Google</VisuallyHidden>
+              <VisuallyHidden>Sign up with Google</VisuallyHidden>
               <FaGoogle />
             </Button>
             <Button color="currentColor" variant="outline">
-              <VisuallyHidden>Login with Github</VisuallyHidden>
+              <VisuallyHidden>Sign up with Github</VisuallyHidden>
               <FaGithub />
             </Button>
           </SimpleGrid>
@@ -76,4 +76,4 @@ export const Login: React.FC<any> = (): JSX.Element => {
   );
 };
 
-export default Login;
+export default Register;

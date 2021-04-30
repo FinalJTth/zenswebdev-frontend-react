@@ -1,25 +1,85 @@
 import * as React from 'react';
-import { Link as ReactLink } from 'react-router-dom';
+import { Link as ReactLink, useHistory } from 'react-router-dom';
 import {
+  Avatar,
   Box,
   Center,
   Flex,
   Heading,
   HStack,
-  Spacer,
+  Image,
   Text,
   Button,
   Link,
   LinkBox,
   LinkOverlay,
+  Spacer,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Portal,
+  useColorModeValue as mode,
 } from '@chakra-ui/react';
+import Logo from '../../components/Logo';
 
 type WebHeaderProps = any;
 
 const WebHeader: React.FC<WebHeaderProps> = (
   props: WebHeaderProps,
 ): JSX.Element => {
-  const { test } = props;
+  const user = {
+    isAuthenticated: false,
+  };
+  const history = useHistory();
+
+  const renderProfileMenu = () => {
+    return (
+      <Menu
+        offset={[0, 0]}
+        preventOverflow
+        placement="bottom-end"
+        strategy="absolute"
+      >
+        <MenuButton>
+          <Box display="flex" overflow="hidden" marginRight="5px">
+            <Avatar
+              size="md"
+              name="Ryan Florence"
+              src="https://a.furaffinity.net/1611881384/finaljtth.gif"
+            />
+          </Box>
+        </MenuButton>
+        <Portal>
+          <MenuList>
+            <MenuItem onClick={() => history.push('/profile')}>
+              <Text>Profile</Text>
+            </MenuItem>
+          </MenuList>
+        </Portal>
+      </Menu>
+    );
+  };
+
+  const renderButtonForGuest = () => {
+    return (
+      <HStack spacing="20px">
+        <Button variant="linkHeader" onClick={() => history.push('/login')}>
+          Sign In
+        </Button>
+        <Button
+          variant="solid"
+          size="lg"
+          rounded={{ sm: 'none' }}
+          height="51px"
+          onClick={() => history.push('/signup')}
+        >
+          Getting Started
+        </Button>
+      </HStack>
+    );
+  };
+
   return (
     <Flex
       top="0"
@@ -33,10 +93,18 @@ const WebHeader: React.FC<WebHeaderProps> = (
       position="sticky"
       alignItems="center"
     >
-      <Button variant="linkHeader">Home</Button>
-      <Link href="/login">
-        <Button variant="linkHeader">Login</Button>
+      <Link href="/">
+        <Button variant="unstyled" marginLeft="20px">
+          <Logo
+            mx="auto"
+            h="8"
+            iconColor={mode('blue.100', 'blue.100')}
+            textColor={mode('gray.200', 'gray.200')}
+          />
+        </Button>
       </Link>
+      <Spacer />
+      {user.isAuthenticated ? renderProfileMenu() : renderButtonForGuest()}
     </Flex>
   );
 };
