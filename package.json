@@ -16,12 +16,21 @@
     "@types/react-dom": "^17.0.3",
     "@types/react-router-dom": "^5.1.7",
     "axios": "^0.21.1",
+    "crypto-es": "^1.2.7",
+    "dotenv": "^8.2.0",
+    "dotenv-webpack": "^7.0.2",
     "framer-motion": "4",
+    "json5": "^2.2.0",
+    "localforage": "^1.9.0",
     "mobx": "^6.1.8",
     "mobx-state-tree": "^5.0.1",
     "mobx-utils": "^6.0.4",
+    "mst-persist": "^0.1.3",
+    "prop-types": "^15.7.2",
     "react": "^17.0.2",
+    "react-avatar-editor": "^11.1.0",
     "react-dom": "^17.0.2",
+    "react-hook-form": "^7.3.5",
     "react-icons": "^4.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
@@ -29,10 +38,14 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "export HTTPS=true&&SSL_CRT_FILE=secrets/cert.pem&&SSL_KEY_FILE=secrets/key.pem react-scripts start",
+    "build": "export HTTPS=true&&SSL_CRT_FILE=secrets/cert.pem&&SSL_KEY_FILE=secrets/key.pem react-scripts build",
+    "test": "export HTTPS=true&&SSL_CRT_FILE=secrets/cert.pem&&SSL_KEY_FILE=secrets/key.pem react-scripts test",
+    "eject": "export HTTPS=true&&SSL_CRT_FILE=secrets/cert.pem&&SSL_KEY_FILE=secrets/key.pem react-scripts eject",
+    "start:window": "set HTTPS=true&&set SSL_CRT_FILE=secrets/cert.pem&&set SSL_KEY_FILE=secrets/key.pem&&react-scripts start",
+    "build:window": "set HTTPS=true&&set SSL_CRT_FILE=secrets/cert.pem&&set SSL_KEY_FILE=secrets/key.pem&&react-scripts build",
+    "test:window": "set HTTPS=true&&set SSL_CRT_FILE=secrets/cert.pem&&set SSL_KEY_FILE=secrets/key.pem&&react-scripts test",
+    "eject:window": "set HTTPS=true&&set SSL_CRT_FILE=secrets/cert.pem&&set SSL_KEY_FILE=secrets/key.pem&&react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

@@ -55,6 +55,8 @@
         "no-shadow": "off",
         "@typescript-eslint/no-shadow": ["error"],
         "no-unused-vars": ["off"],
+        "no-param-reassign": ["off"],
+        "no-underscore-dangle": ["off"],
         "@typescript-eslint/no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
         "react/jsx-filename-extension": [
             2,
