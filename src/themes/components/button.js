@@ -1,6 +1,7 @@
 const buttonStyle = {
   baseStyle: (props) => ({
     fontWeight: (props && props.fontWeight) || 'semibold',
+    fontSize: props && props.fontSize,
   }),
 
   sizes: {
@@ -51,10 +52,10 @@ const buttonStyle = {
       _hover: { bg: '' },
       _focus: {
         boxShadow:
-          '0 0 1px 2px rgba(88, 144, 255, .75), 0 1px 1px rgba(0, 0, 0, .15)',
+          '0 0 1px 2px rgba(88, 144, 144, .75), 0 1px 1px rgba(0, 0, 0, .15)',
         bg: 'rgba(178, 245, 234, 0.2)',
         borderColor: 'teal.500',
-        borderWidth: '0px',
+        borderWidth: '2px',
       },
       _active: {
         bg: 'rgba(129, 230, 217, 0.3)',
@@ -62,12 +63,13 @@ const buttonStyle = {
     },
 
     solid: (props) => ({
-      bg: 'teal.500',
-      color: 'white',
+      bg: props.bg || 'teal.500',
+      color: props.color || 'white',
+      rounded: props.rounded || { sm: 'md' },
       _hover: { bg: 'teal.600' },
       _focus: {
         boxShadow:
-          '0 0 1px 2px rgba(88, 144, 255, .75), 0 1px 1px rgba(0, 0, 0, .15)',
+          '0 0 1px 2px rgba(88, 144, 144, .75), 0 1px 1px rgba(0, 0, 0, .15)',
         bg: 'teal.600',
         borderColor: '#bec3c9',
         borderWidth: '0px',
@@ -82,7 +84,7 @@ const buttonStyle = {
       _hover: { bg: '' },
       _focus: {
         boxShadow:
-          '0 0 1px 2px rgba(88, 144, 255, .75), 0 1px 1px rgba(0, 0, 0, .15)',
+          '0 0 1px 2px rgba(88, 144, 144, .75), 0 1px 1px rgba(0, 0, 0, .15)',
         bg: 'rgba(178, 245, 234, 0.1)',
         borderColor: 'teal.500',
         borderWidth: '0px',

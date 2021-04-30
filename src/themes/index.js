@@ -6,13 +6,17 @@ import globalStyles from './globalStyle';
 // import borders from './foundations/borders'
 // Component style overrides
 import Button from './components/button';
+import Input from './components/input';
 
 const overrides = {
-  globalStyles,
+  styles: {
+    globalStyles,
+  },
   // borders,
   // Other foundational style overrides go here
   components: {
     Button,
+    Input,
     // Other components go here
   },
 };
