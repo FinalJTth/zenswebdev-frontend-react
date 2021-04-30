@@ -87,7 +87,7 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
   const handleEmailOnBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
     const email = e.target.value;
     if (email.length === 0) {
-      setUsernameInvalid({
+      setEmailInvalid({
         ...emailInvalid,
         isInvalid: false,
       });
@@ -146,6 +146,13 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
   ) => {
     const confirmPassword = e.target.value;
     console.log('pass', confirmPassword, passwordState);
+    if (confirmPassword.length === 0) {
+      setConfirmPasswordInvalid({
+        ...confirmPasswordInvalid,
+        isInvalid: false,
+      });
+      return;
+    }
     if (confirmPassword.localeCompare(passwordState) !== 0) {
       setConfirmPasswordInvalid({
         isInvalid: true,
