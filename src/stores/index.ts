@@ -1,7 +1,9 @@
 import { createContext, useContext } from 'react';
+import ClassifyModel from './ClassifyModel';
 import User from './User';
 
 export const stores = {
+  ClassifyModel,
   User,
 };
 
