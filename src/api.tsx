@@ -25,7 +25,7 @@ axiosBaseURL.interceptors.request.use(
       req.headers.Authorization = `Bearer ${token}`;
     }
     // req.headers.ReactKey = process.env.REACT_APP_API_KEY;
-    console.log(`REQUEST : ${req.method} ${req.url}\nTOKEN : ${token}`);
+    // console.log(`REQUEST : ${req.method} ${req.url}\nTOKEN : ${token}`);
 
     /*
     // Important: request interceptors **must** return the request.
@@ -35,7 +35,7 @@ axiosBaseURL.interceptors.request.use(
     }
     */
     // req.headers['Access-Control-Allow-Origin'] = '*';
-    console.log('REQUEST :', req);
+    // console.log('REQUEST :', req);
     return req;
   },
   (err: Record<string, any>) => {
@@ -53,7 +53,7 @@ axiosBaseURL.interceptors.request.use(
 
 axiosBaseURL.interceptors.response.use(
   (res: AxiosResponse<any>) => {
-    console.log('RESPONSE :', res);
+    // console.log('RESPONSE :', res);
     return res;
   },
   (err: AxiosResponse<any>) => {
@@ -115,6 +115,32 @@ const handleGql = (pObject: string | Record<string, any>, type: string) => {
   return returngql;
 };
 
+const handleResponseError = (response: Record<string, any>) => {
+  if (
+    response.data.errors[0].extensions &&
+    response.data.errors[0].extensions._stack
+  ) {
+    const { exception } = response.data.errors[0].extensions;
+    throw new Error(`${exception._stack}`);
+  } else {
+    let message = '';
+    response.data.errors.map((error: any, index: number) => {
+      let locations = '';
+      if (error.locations) {
+        error.locations.map(
+          (location: Record<string, any>, locationIndex: number) => {
+            locations += `\tat ${locationIndex} ${JSON.stringify(location)}\n`;
+            return location;
+          },
+        );
+      }
+      message += `${index} ${error.message}\n${locations}`;
+      return error;
+    });
+    throw new Error(message);
+  }
+};
+
 const axiosGqlQuery = async (
   overloadingParam: string, // resolver or query string
   parameters?: Record<string, any> | string,
@@ -127,8 +153,7 @@ const axiosGqlQuery = async (
     .post('/graphql', JSON.stringify({ query }), gqlHeader)
     .then((response: Record<string, any>) => {
       if (response.data.errors && response.data.errors.length > 0) {
-        const { exception } = response.data.errors[0].extensions;
-        throw new Error(`${exception._stack}`);
+        handleResponseError(response);
       }
       return response.data;
     });
@@ -146,8 +171,9 @@ const axiosGqlMutation = async (
     .post('/graphql', JSON.stringify({ query }), gqlHeader)
     .then((response: Record<string, any>) => {
       if (response.data.errors && response.data.errors.length > 0) {
-        const { exception } = response.data.errors[0].extensions;
-        throw new Error(`${exception._stack}`);
+        if (response.data.errors && response.data.errors.length > 0) {
+          handleResponseError(response);
+        }
       }
       return response.data;
     });
@@ -185,27 +211,8 @@ const axiosGqlServiceQuery = async (
     .post('/graphql', JSON.stringify({ query }), gqlHeader)
     .then((response: Record<string, any>) => {
       if (response.data.errors && response.data.errors.length > 0) {
-        if (response.data.errors[0].extensions) {
-          const { exception } = response.data.errors[0].extensions;
-          throw new Error(`${exception._stack}`);
-        } else {
-          let message = '';
-          response.data.errors.map((error: any, index: number) => {
-            let locations = '';
-            if (error.locations) {
-              error.locations.map(
-                (location: Record<string, any>, locationIndex: number) => {
-                  locations += `\tat ${locationIndex} ${JSON.stringify(
-                    location,
-                  )}\n`;
-                  return location;
-                },
-              );
-            }
-            message += `${index} ${error.message}\n${locations}`;
-            return error;
-          });
-          throw new Error(message);
+        if (response.data.errors && response.data.errors.length > 0) {
+          handleResponseError(response);
         }
       }
       return response.data;

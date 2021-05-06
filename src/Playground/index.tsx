@@ -12,19 +12,11 @@ import {
   Text,
   Textarea,
   VStack,
-  Skeleton,
-  Spacer,
-  Table,
-  TableCaption,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Tfoot,
+  useToast,
 } from '@chakra-ui/react';
 import JSON5 from 'json5';
 import Dropzone, { useDropzone } from 'react-dropzone';
-import Promise from 'bluebird';
+import { Promise } from 'bluebird';
 import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
 import * as uuid from 'uuid';
@@ -35,13 +27,7 @@ import {
   axiosTest,
   axiosGqlServiceQuery,
 } from '../api';
-import {
-  toGraphQLParameterString,
-  toGraphQLReturnString,
-  buildGraphql,
-  useStateCallback,
-  toBase64,
-} from '../utils';
+import { buildGraphql, useStateCallback, toBase64 } from '../utils';
 import { useStores } from '../stores';
 import { IClassifyPredictionsType } from '../stores/ClassifyModel';
 import PredictionsBox from './PredictionsBox';
@@ -142,19 +128,30 @@ const Playground: React.FC<PlaygroundProps> = observer(
       mutation: '',
     });
 
+    const toast = useToast();
+
     const onDrop = useCallback(async (acceptedFiles: Array<File>) => {
       // Do something with the files
+      let isToast = false;
       const pictures: Array<Record<string, any>> = [];
-      const base64pictures = await Promise.all(
-        acceptedFiles.map(async (file: File, index: number) => {
-          pictures.push({
-            name: file.name,
-            size: file.size,
-            url: URL.createObjectURL(acceptedFiles[index]),
-          });
-          return toBase64(acceptedFiles[index]);
-        }),
-      );
+      const base64pictures = await acceptedFiles
+        .sort((a: File, b: File) => a.name.localeCompare(b.name))
+        .reduce(async (result: Promise<Array<any>>, file: File) => {
+          if (file.type.search(/^image/) !== -1) {
+            pictures.push({
+              name: file.name,
+              size: file.size,
+              url: URL.createObjectURL(file),
+            });
+            const base64 = await toBase64(file);
+            await result.then((array: Array<any>) => {
+              array.push(base64);
+            });
+          } else {
+            isToast = true;
+          }
+          return result;
+        }, Promise.resolve([]));
       const defaultArray: Array<IClassifyPredictionsType> = Array.from(
         { length: base64pictures.length },
         (current: any, index: number) => {
@@ -172,7 +169,9 @@ const Playground: React.FC<PlaygroundProps> = observer(
         const payload = await ClassifyModel.getPredictions(
           { inputImage: base64 },
           [{ predictions: ['id', 'object', 'confident'] }],
-        );
+        ).catch((error) => {
+          console.error(error);
+        });
         defaultArray[index] = {
           picture: defaultArray[index].picture,
           predictions: payload.predictions,
@@ -180,6 +179,17 @@ const Playground: React.FC<PlaygroundProps> = observer(
         };
         ClassifyModel.setDatas(defaultArray);
       });
+      if (isToast) {
+        return toast({
+          title: 'File upload error.',
+          description: 'Please upload only image files',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+        });
+      }
+
+      return Promise.resolve();
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -309,7 +319,5 @@ const Playground: React.FC<PlaygroundProps> = observer(
     );
   },
 );
-
-Playground.displayName = 'Playground';
 
 export default Playground;

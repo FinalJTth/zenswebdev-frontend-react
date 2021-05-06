@@ -1,49 +1,66 @@
-import {
-  types,
-  flow,
-  unprotect,
-  cast,
-  Instance,
-  IArrayType,
-  IMSTArray,
-  IAnyType,
-  IMaybe,
-} from 'mobx-state-tree';
+import { types, flow, cast, Instance } from 'mobx-state-tree';
 import localForage from 'localforage';
 import { persist } from 'mst-persist';
-import { axiosGqlQuery, axiosGqlServiceQuery } from '../../api';
-import { buildGraphql } from '../../utils';
+import {
+  axiosGqlQuery,
+  axiosGqlMutation,
+  axiosGqlServiceQuery,
+} from '../../api';
 
-type UserPersonalDataType = {
+export interface IUserProfile {
+  profileId: string;
   firstName: string;
   lastName: string;
   sex: string;
-};
+  profilePicture: string;
+}
 
-type UserDataType = {
+export interface IUser {
+  userId: string;
   username: string;
   email: string;
-  role: string;
-  profilePicture: string | undefined;
-  personalData: UserPersonalDataType | undefined;
-};
+  role: Role;
+  profile: IUserProfile;
+}
 
-const UserPersonalData = types.model('UserPersonalData', {
+export enum Role {
+  guest = 'guest',
+  user = 'user',
+  admin = 'admin',
+  owner = 'owner',
+}
+
+export enum RoleInput {
+  guest = 'enum_guest',
+  user = 'enum_user',
+  admin = 'enum_admin',
+  owner = 'enum_owner',
+}
+
+const UserProfile = types.model('UserProfile', {
+  profileId: types.string,
   firstName: types.string,
   lastName: types.string,
   sex: types.string,
+  profilePicture: types.maybe(types.string),
 });
 
 const UserData = types.model('UserData', {
+  userId: types.string,
   username: types.string,
   email: types.string,
-  role: types.string,
-  profilePicture: types.maybe(types.string),
-  personalData: types.maybe(UserPersonalData),
+  role: types.enumeration<Role>('Role', Object.values(Role)),
+  profile: types.optional(UserProfile, {
+    profileId: '',
+    firstName: '',
+    lastName: '',
+    sex: '',
+    profilePicture: '',
+  }),
 });
 
-type UserDataMSTType = Instance<typeof UserData>;
-type UserPersonalDataMSTType = Instance<typeof UserPersonalData | undefined>;
+interface IUserMST extends Instance<typeof UserData> {}
+interface IUserProfileMST extends Instance<typeof UserProfile> {}
 
 const UserModel = types
   .model('UserModel', {
@@ -51,9 +68,48 @@ const UserModel = types
     currentUser: UserData,
     isAuthenticated: types.boolean,
   })
-  .actions((self) => ({
+  .actions((self) => {
+    // GETTER
+    const getUsersContainer = (): Array<IUserMST> => {
+      return self.usersContainer;
+    };
+    const getCurrentUser = (): IUserMST => {
+      return self.currentUser;
+    };
+    const getIsAuthenticated = (): Instance<typeof types.boolean> => {
+      return self.isAuthenticated;
+    };
+    const getCurrentUserProfile = (): IUserProfileMST => {
+      return self.currentUser.profile;
+    };
+    // SETTER
+    const setUsersContainer = (users: Array<IUser>) => {
+      self.usersContainer = cast(users);
+    };
+    const setCurrentUser = (user: IUser) => {
+      self.currentUser = user;
+    };
+    const setIsAuthenticated = (isAuthenticated: boolean) => {
+      self.isAuthenticated = isAuthenticated;
+    };
+    const setCurrentUserProfile = (user: IUserProfile) => {
+      self.currentUser.profile = user;
+    };
+
+    return {
+      getUsersContainer,
+      getCurrentUser,
+      getIsAuthenticated,
+      getCurrentUserProfile,
+      setUsersContainer,
+      setCurrentUser,
+      setIsAuthenticated,
+      setCurrentUserProfile,
+    };
+  })
+  .actions((self) => {
     // API
-    getUserByQuery: flow(function* getUserByQuery(
+    const getUserByQuery = flow(function* getUserByQuery(
       parameters: Record<string, any> | string,
       returnValues?: Array<any> | string,
     ): Generator<any, any, any> {
@@ -62,11 +118,11 @@ const UserModel = types
           return res.data.query;
         })
         .catch(() => {
-          console.error('There has been some error occured');
+          console.error('Error occured while getting user info');
         });
-    }),
+    });
 
-    login: flow(function* login(
+    const login = flow(function* login(
       parameters: Record<string, any> | string,
       returnValues?: Array<any> | string,
     ): Generator<any, any, any> {
@@ -74,15 +130,88 @@ const UserModel = types
         .then(async (res: { data: Record<string, any> }) => {
           console.log('Login', res);
           await localForage.setItem('access_token', res.data.query);
+          self.setIsAuthenticated(true);
         })
         .catch((error) => {
-          console.error('Error occured while log in\n', error.message);
+          console.error('Error occured while loghing in\n', error.message);
           throw new Error(error.message.split('\n')[0]);
         });
-    }),
+    });
+
+    const logout = () => {
+      localForage.removeItem('access_token');
+      self.setIsAuthenticated(false);
+    };
+
+    const signup = flow(function* register(
+      parameters: Record<string, any>,
+      returnValues?: Array<any>,
+    ) {
+      const {
+        data: { profile, ...restParameters },
+      } = parameters;
+      const userParameters = restParameters;
+      const profileParameters = profile;
+      const userResult = yield axiosGqlMutation(
+        'CreateUser',
+        {
+          data: userParameters,
+        },
+        ['userId'],
+      )
+        .then((res: { data: Record<string, any> }) => {
+          console.log('Signup_CreateUser', res);
+          return res.data.query;
+        })
+        .catch((error) => {
+          console.error('Error occured while creating user\n', error.message);
+          throw new Error(error.message.split('\n')[0]);
+        });
+      const profileResult = yield axiosGqlMutation(
+        'CreateProfile',
+        {
+          data: profileParameters,
+        },
+        ['profileId'],
+      )
+        .then((res) => {
+          console.log('Signup_CreateProfile', res);
+          return res.data.query;
+        })
+        .catch((error) => {
+          console.error(
+            "Error occured while create user's profile\n",
+            error.message,
+          );
+          throw new Error(error.message.split('\n')[0]);
+        });
+      return yield axiosGqlMutation(
+        'AddUserProfile',
+        {
+          from: {
+            userId: userResult.userId,
+          },
+          to: {
+            profileId: profileResult.profileId,
+          },
+        },
+        returnValues,
+      )
+        .then((res) => {
+          console.log('Signup_AddUserProfile', res);
+          return res.data.query;
+        })
+        .catch((error) => {
+          console.error(
+            'Error occured while create user profile relation\n',
+            error.message,
+          );
+          throw new Error(error.message.split('\n')[0]);
+        });
+    });
     // VALIDATION
 
-    validateUsername: flow(function* validateUsername(
+    const validateUsername = flow(function* validateUsername(
       parameters: Record<string, any> | string,
       returnValues?: Array<any> | string,
     ): Generator<any, any, any> {
@@ -102,9 +231,9 @@ const UserModel = types
           );
           throw new Error(error.message.split('\n')[0]);
         });
-    }),
+    });
 
-    validateEmail: flow(function* validateEmail(
+    const validateEmail = flow(function* validateEmail(
       parameters: Record<string, any> | string,
       returnValues?: Array<any> | string,
     ): Generator<any, any, any> {
@@ -124,9 +253,9 @@ const UserModel = types
           );
           throw new Error(error.message.split('\n')[0]);
         });
-    }),
+    });
 
-    validatePassword: flow(function* validatePassword(
+    const validatePassword = flow(function* validatePassword(
       parameters: Record<string, any> | string,
       returnValues?: Array<any> | string,
     ): Generator<any, any, any> {
@@ -146,46 +275,37 @@ const UserModel = types
           );
           throw new Error(error.message.split('\n')[0]);
         });
-    }),
+    });
 
-    // GETTER
-    getUsersContainer(): Array<UserDataMSTType> {
-      return self.usersContainer;
-    },
-    getCurrentUser(): UserDataMSTType {
-      return self.currentUser;
-    },
-    getIsAuthenticated(): Instance<typeof types.boolean> {
-      return self.isAuthenticated;
-    },
-    getCurrentUserPersonalData(): UserPersonalDataMSTType {
-      return self.currentUser.personalData;
-    },
-    // SETTER
-    setUsersContainer(users: Array<UserDataType>) {
-      self.usersContainer = cast(users);
-    },
-    setCurrentUser(user: UserDataType) {
-      self.currentUser = user;
-    },
-    setIsAuthenticated(isAuthenticated: boolean) {
-      self.isAuthenticated = isAuthenticated;
-    },
-    setCurrentUserPersonalData(user: UserPersonalDataType) {
-      self.currentUser.personalData = user;
-    },
-  }))
+    return {
+      getUserByQuery,
+      login,
+      logout,
+      signup,
+      validateUsername,
+      validateEmail,
+      validatePassword,
+      afterCreate: async () => {
+        const token = await localForage.getItem('access_token');
+        if (token) {
+          self.setIsAuthenticated(true);
+        }
+      },
+    };
+  })
   .create({
     usersContainer: [],
     currentUser: {
+      userId: '',
       username: '',
       email: '',
-      role: '',
-      profilePicture: '',
-      personalData: {
+      role: Role.guest,
+      profile: {
+        profileId: '',
         firstName: '',
         lastName: '',
         sex: '',
+        profilePicture: '',
       },
     },
     isAuthenticated: false,

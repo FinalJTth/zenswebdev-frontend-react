@@ -40,7 +40,7 @@ const PasswordField = React.forwardRef<HTMLInputElement, IPasswordFieldProps>(
       onToggle();
       const input = inputRef.current;
       if (input) {
-        input.focus({ preventScroll: true });
+        // input.focus({ preventScroll: true });
         const length = input.value.length * 2;
         requestAnimationFrame(() => {
           input.setSelectionRange(length, length);
@@ -53,7 +53,10 @@ const PasswordField = React.forwardRef<HTMLInputElement, IPasswordFieldProps>(
         id={
           props.formLabel
             ? props.formLabel.substring(0, 1).toLowerCase() +
-              props.formLabel.toLowerCase().replace(' ', '')
+              props.formLabel
+                .substring(1, props.formLabel.length)
+                .toLowerCase()
+                .replace(' ', '')
             : 'password'
         }
         isInvalid={props.isInvalid}

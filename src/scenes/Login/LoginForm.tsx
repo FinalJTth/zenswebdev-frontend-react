@@ -5,6 +5,7 @@ import {
   FormLabel,
   Input,
   Stack,
+  useToast,
 } from '@chakra-ui/react';
 import * as React from 'react';
 import { useState } from 'react';
@@ -17,23 +18,66 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
   const { User } = useStores();
   const [emailInvalid, setEmailInvalid] = useState(false);
   const [passwordInvalid, setPasswordInvalid] = useState(false);
+
+  const submitToast = useToast();
+
+  const history = useHistory();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // your login logic here
+    const target = e.target as typeof e.target & {
+      email: { value: string };
+      password: { value: string };
+    };
+    try {
+      await User.login({
+        email: target.email.value,
+        password: target.password.value,
+      }).catch((error) => {
+        if (error.message.includes('Email')) {
+          setEmailInvalid(true);
+        } else if (error.message.includes('Password')) {
+          setPasswordInvalid(true);
+        }
+      });
+      const [user] = await User.getUserByQuery(
+        {
+          email: target.email.value,
+        },
+        [
+          'userId',
+          'username',
+          'email',
+          'role',
+          {
+            profile: [
+              'profileId',
+              'firstName',
+              'lastName',
+              'sex',
+              'profilePicture',
+            ],
+          },
+        ],
+      );
+      User.setCurrentUser(user);
+      history.push('/');
+    } catch (error) {
+      console.error(error);
+      return submitToast({
+        title: 'Signup error.',
+        description: 'Something went wrong while trying to signup',
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+      });
+    }
+    return Promise.resolve();
+  };
+
   return (
-    <form
-      onSubmit={async (e: Record<string, any>) => {
-        e.preventDefault();
-        // your login logic here
-        const payload = await User.login({
-          email: e.target.email.value,
-          password: e.target.password.value,
-        }).catch((error) => {
-          if (error.message.includes('Email')) {
-            setEmailInvalid(true);
-          } else if (error.message.includes('Password')) {
-            setPasswordInvalid(true);
-          }
-        });
-      }}
-    >
+    <form onSubmit={async (e) => handleSubmit(e)}>
       <Stack spacing="4">
         <FormControl id="email" isInvalid={emailInvalid}>
           <FormLabel>Email address</FormLabel>

@@ -4,6 +4,7 @@ import JSON5 from 'json5';
 
 const graphQLParamMap = JSON5.parse(`{ "'": '"', ':': ': ', ',': ' '}`);
 
+/*
 export const toGraphQLParameterString = (obj: Record<string, any>): string => {
   const regex = new RegExp(Object.keys(graphQLParamMap).join('|'), 'gi');
   const str = JSON5.stringify(obj);
@@ -11,6 +12,7 @@ export const toGraphQLParameterString = (obj: Record<string, any>): string => {
     .substring(1, str.length - 1)
     .replace(regex, (matched) => graphQLParamMap[matched]);
 };
+*/
 
 export const toGraphQLReturnString = (
   obj: Array<string | Record<string, any>>,
@@ -82,7 +84,7 @@ const stringifyValue = (value: any, nextValue?: any): string => {
   return `${tstr.substring(0, tstr.length)}${nextValue ? ' ' : ''}`;
 };
 
-export const toGraphQLParameterStringNew = (
+export const toGraphQLParameterString = (
   obj: Record<string, any>,
   recursive?: boolean,
 ) => {
@@ -90,32 +92,6 @@ export const toGraphQLParameterStringNew = (
   let params = ``;
   entries.forEach((entry: Array<any>, index: number) => {
     const [key, value] = entry;
-    /*
-    if (typeof value === 'string' || value instanceof String) {
-      const typeIndex = value.search(/^enum_/);
-      if (typeIndex !== -1) {
-        params += `${key}:${value.substring(typeIndex + 5, value.length)} `;
-      } else {
-        params += `${key}:"${value}" `;
-      }
-    } else if (Number(value)) {
-      params += `${key}:${value} `;
-    } else if (typeof value === 'object' && value !== null) {
-      const nextObject = entries[index + 1];
-      if (nextObject) {
-        params += `${key}: {${toGraphQLParameterStringNew(value, true)}} `;
-      } else {
-        params += `${key}: {${toGraphQLParameterStringNew(value, true)}}`;
-      }
-      // params += `${key}:${JSON5.stringify(value)} `;
-    } else if (value instanceof Array) {
-      const tstr = ``;
-      value.forEach((field: any, index2: number) => {
-        JSON5.stringify(field);
-      });
-      params = `${key}:[${'test'}]`;
-    }
-    */
     const nextValue = entries[index + 1];
     params += `${key}: ${stringifyValue(value, nextValue)}`;
   });
@@ -124,31 +100,6 @@ export const toGraphQLParameterStringNew = (
 };
 
 export const buildGraphql = (
-  type: string,
-  resolver: string,
-  parameters: Record<string, any> | string,
-  returnValues?: Array<string | Record<string, any>> | string,
-): string => {
-  const params =
-    typeof parameters === 'string' || parameters instanceof String
-      ? parameters
-      : toGraphQLParameterStringNew(parameters);
-  let rv;
-  if (returnValues) {
-    rv =
-      typeof returnValues === 'string' || returnValues instanceof String
-        ? returnValues
-        : ` ${toGraphQLReturnString(returnValues)}`;
-  } else {
-    rv = '';
-  }
-  if (type === 'mutation') {
-    return `${type} {${resolver}(${params})${rv}}`;
-  }
-  return `{${type}: ${resolver}(${params})${rv}}`;
-};
-
-export const buildGraphqlMutation = (
   type: string,
   resolver: string,
   parameters: Record<string, any> | string,
@@ -167,7 +118,10 @@ export const buildGraphqlMutation = (
   } else {
     rv = '';
   }
-  return `${type} ${resolver}(${params})${rv}`;
+  if (type === 'mutation') {
+    return `${type} {query: ${resolver}(${params})${rv}}`;
+  }
+  return `{${type}: ${resolver}(${params})${rv}}`;
 };
 
 export async function uploadPicture(data: any) {

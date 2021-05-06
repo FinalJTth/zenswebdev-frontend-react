@@ -8,12 +8,15 @@ import {
   InputRightElement,
   Spinner,
   Stack,
+  useToast,
 } from '@chakra-ui/react';
+import { useHistory } from 'react-router-dom';
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import CryptoES from 'crypto-es';
 import { useStores } from '../../stores';
 import PasswordField from '../../components/PasswordField';
+import { RoleInput } from '../../stores/User';
 
 const LoginForm: React.FC<any> = (): JSX.Element => {
   const { User } = useStores();
@@ -44,6 +47,8 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
 
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
+
+  const history = useHistory();
 
   const handleUsernameOnBlur = async (
     e: React.FocusEvent<HTMLInputElement>,
@@ -146,10 +151,11 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
     });
   };
 
+  const submitToast = useToast();
+  // React.FormEvent<HTMLFormElement>
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // your login logic here
-    setIsSubmitButtonLoading(true);
     if (
       !usernameInvalid.isInvalid &&
       !emailInvalid.isInvalid &&
@@ -157,7 +163,77 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
       !confirmPasswordInvalid.isInvalid
     ) {
       // TODO
+      // setIsSubmitButtonLoading(true);
+      const target = e.target as typeof e.target & {
+        username: { value: string };
+        email: { value: string };
+        password: { value: string };
+        confirmpassword: { value: string };
+      };
+      const username = target.username.value;
+      const email = target.email.value;
+      const password = target.password.value;
+      try {
+        const { from, to } = await User.signup(
+          {
+            data: {
+              username,
+              email,
+              password,
+              role: RoleInput.guest,
+              profile: {
+                firstName: '',
+                lastName: '',
+                sex: '',
+                profilePicture: '',
+              },
+            },
+          },
+          [
+            { from: ['userId', 'username', 'email', 'role'] },
+            {
+              to: [
+                'profileId',
+                'firstName',
+                'lastName',
+                'sex',
+                'profilePicture',
+              ],
+            },
+          ],
+        );
+        await User.login({
+          email,
+          password,
+        });
+        User.setCurrentUser({
+          ...from,
+          profile: {
+            ...to,
+          },
+        });
+        User.setIsAuthenticated(true);
+        history.push('/');
+      } catch (error) {
+        console.error(error);
+        return submitToast({
+          title: 'Signup error.',
+          description: 'Something went wrong while trying to signup',
+          status: 'error',
+          duration: 9000,
+          isClosable: true,
+        });
+      }
+    } else {
+      return submitToast({
+        title: 'Signup error.',
+        description: 'One or more fields is invalid',
+        status: 'error',
+        duration: 9000,
+        isClosable: true,
+      });
     }
+    return Promise.resolve();
   };
 
   return (
