@@ -57,6 +57,7 @@
         "no-unused-vars": ["off"],
         "no-param-reassign": ["off"],
         "no-underscore-dangle": ["off"],
+        "prefer-destructuring": ["error", { "object": true, "array": false }],
         "@typescript-eslint/no-unused-vars": ["warn", { "vars": "all", "args": "after-used", "ignoreRestSiblings": false }],
         "react/jsx-filename-extension": [
             2,
