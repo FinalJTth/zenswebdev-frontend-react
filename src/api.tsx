@@ -134,6 +134,25 @@ const axiosGqlQuery = async (
     });
 };
 
+const axiosGqlMutation = async (
+  overloadingParam: string, // resolver or query string
+  parameters?: Record<string, any> | string,
+  returnValues?: Array<any> | string,
+) => {
+  const query = parameters
+    ? buildGraphql('mutation', overloadingParam, parameters, returnValues)
+    : overloadingParam;
+  return axiosBaseURL
+    .post('/graphql', JSON.stringify({ query }), gqlHeader)
+    .then((response: Record<string, any>) => {
+      if (response.data.errors && response.data.errors.length > 0) {
+        const { exception } = response.data.errors[0].extensions;
+        throw new Error(`${exception._stack}`);
+      }
+      return response.data;
+    });
+};
+
 /*
 const axiosGqlQuery = async (pQuery: string | Record<string, any>) => {
   const query = handleGql(pQuery, 'query');
@@ -146,17 +165,13 @@ const axiosGqlQuery = async (pQuery: string | Record<string, any>) => {
     },
   })
     .then((res) => {
-      console.log('Data : ', res.data.data.Movie);
+      console.log('Data : ', res.data.query.data.Movie);
     })
     .catch((err) => {
       console.log(err.message);
     });
 };
 */
-const axiosGqlMutation = async (pMutationString: string) => {
-  const mutation = handleGql(pMutationString, 'mutation');
-  return axiosBaseURL.post('/graphql', JSON.stringify(mutation), gqlHeader);
-};
 
 const axiosGqlServiceQuery = async (
   overloadingParam: string, // resolver or query string
