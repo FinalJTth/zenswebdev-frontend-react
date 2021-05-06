@@ -1,20 +1,5 @@
-import {
-  types,
-  flow,
-  unprotect,
-  cast,
-  Instance,
-  IArrayType,
-  IMSTArray,
-  IAnyType,
-  IMaybe,
-} from 'mobx-state-tree';
-import localForage from 'localforage';
-import { persist } from 'mst-persist';
-import Promise from 'bluebird';
-import * as uuid from 'uuid';
-import { axiosGqlQuery, axiosGqlServiceQuery } from '../../api';
-import { buildGraphql, toBase64 } from '../../utils';
+import { types, flow, cast } from 'mobx-state-tree';
+import { axiosGqlServiceQuery } from '../../api';
 
 export interface IPredictionType {
   id?: string;
