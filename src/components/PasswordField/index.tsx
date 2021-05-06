@@ -9,6 +9,7 @@ import {
   InputGroup,
   InputProps,
   InputRightElement,
+  Spinner,
   useDisclosure,
   useMergeRefs,
   useColorModeValue as mode,
@@ -21,6 +22,7 @@ type OtherProps = {
   formLabel?: string;
   isRegisterForm?: boolean;
   isInvalid?: boolean;
+  isLoading?: boolean;
   invalidMessage?: string;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
 };
@@ -71,13 +73,17 @@ const PasswordField = React.forwardRef<HTMLInputElement, IPasswordFieldProps>(
         </Flex>
         <InputGroup>
           <InputRightElement>
-            <IconButton
-              bg="transparent !important"
-              variant="ghost"
-              aria-label={isOpen ? 'Mask password' : 'Reveal password'}
-              icon={isOpen ? <HiEyeOff /> : <HiEye />}
-              onClick={onClickReveal}
-            />
+            {props.isLoading ? (
+              <Spinner size="sm" color="teal.400" />
+            ) : (
+              <IconButton
+                bg="transparent !important"
+                variant="ghost"
+                aria-label={isOpen ? 'Mask password' : 'Reveal password'}
+                icon={isOpen ? <HiEyeOff /> : <HiEye />}
+                onClick={onClickReveal}
+              />
+            )}
           </InputRightElement>
           <Input
             rounded={{ sm: 'none' }}
@@ -107,6 +113,7 @@ PasswordField.displayName = 'PasswordField';
 PasswordField.defaultProps = {
   isRegisterForm: false,
   isInvalid: false,
+  isLoading: false,
 };
 
 export default PasswordField;

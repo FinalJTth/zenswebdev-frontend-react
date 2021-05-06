@@ -92,6 +92,8 @@ const WebHeader: React.FC<WebHeaderProps> = (
       boxShadow="lg"
       position="sticky"
       alignItems="center"
+      zIndex="1"
+      overflow="hidden"
     >
       <Link href="/">
         <Button variant="unstyled" marginLeft="20px">

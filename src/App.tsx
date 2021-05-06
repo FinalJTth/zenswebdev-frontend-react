@@ -56,7 +56,7 @@ const App: React.FC<any> = (): JSX.Element => {
   return (
     <ChakraProvider theme={Theme}>
       <WebHeader />
-      <Box height="calc(100vh - 50px)">
+      <Box height="calc(100vh - 50px)" id="scroller">
         <Router />
       </Box>
     </ChakraProvider>

@@ -4,6 +4,9 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
+  Spinner,
   Stack,
 } from '@chakra-ui/react';
 import * as React from 'react';
@@ -14,23 +17,30 @@ import PasswordField from '../../components/PasswordField';
 
 const LoginForm: React.FC<any> = (): JSX.Element => {
   const { User } = useStores();
-  const [usernameInvalid, setUsernameInvalid] = useState({
+  const [usernameInvalid, setUsernameInvalid] = useState<Record<string, any>>({
     isInvalid: false,
     message: '',
   });
-  const [emailInvalid, setEmailInvalid] = useState({
+  const [emailInvalid, setEmailInvalid] = useState<Record<string, any>>({
     isInvalid: false,
     message: '',
   });
-  const [passwordInvalid, setPasswordInvalid] = useState({
+  const [passwordInvalid, setPasswordInvalid] = useState<Record<string, any>>({
     isInvalid: false,
     message: '',
   });
-  const [confirmPasswordInvalid, setConfirmPasswordInvalid] = useState({
+  const [confirmPasswordInvalid, setConfirmPasswordInvalid] = useState<
+    Record<string, any>
+  >({
     isInvalid: false,
     message: '',
   });
   const [passwordState, setPasswordState] = useState('');
+
+  const [isUsernameInputLoading, setIsUsernameInputLoading] = useState(false);
+  const [isEmailInputLoading, setIsEmailInputLoading] = useState(false);
+  const [isPasswordInputLoading, setIsPasswordInputLoading] = useState(false);
+  const [isSubmitButtonLoading, setIsSubmitButtonLoading] = useState(false);
 
   const passwordRef = useRef<HTMLInputElement>(null);
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
@@ -46,42 +56,13 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
       });
       return;
     }
-    /*
-    if (!/^[a-z]/i.test(username)) {
-      setUsernameInvalid({
-        isInvalid: true,
-        message: 'Username must start with a letter',
-      });
-      return;
-    }
-    if (!/^[a-z]{0,}\d*$/i.test(username)) {
-      setUsernameInvalid({
-        isInvalid: true,
-        message: 'Username contains implicit characters',
-      });
-      return;
-    }
-    if (!/^[a-z]{8,30}\d*$/i.test(username)) {
-      setUsernameInvalid({
-        isInvalid: true,
-        message: 'Username must be between 8 - 30 characters',
-      });
-      return;
-    }
-    /*
-    if (!/^(?=.*[0-9]).+$/.test(username)) {
-      setUsernameInvalid({
-        isInvalid: true,
-        message: 'Username must contains at least one or more number',
-      });
-      return;
-    }
-    */
+    setIsUsernameInputLoading(true);
     const validity = await User.validateUsername({ username }, [
       'isInvalid',
       'message',
     ]);
     setUsernameInvalid(validity);
+    setIsUsernameInputLoading(false);
   };
 
   const handleEmailOnBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
@@ -93,22 +74,19 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
       });
       return;
     }
+    setIsEmailInputLoading(true);
     const validity = await User.validateEmail({ email }, [
       'isInvalid',
       'message',
     ]);
     setEmailInvalid(validity);
+    setIsEmailInputLoading(false);
   };
 
   const handlePasswordOnBlur = async (
     e: React.FocusEvent<HTMLInputElement>,
   ) => {
     const password = e.target.value;
-    /*
-    console.log('KEY', AES_SECRET);
-    const encrypted = CryptoES.AES.encrypt(password, AES_SECRET);
-    console.log('ENCRYPTED', encrypted);
-    */
     setPasswordState(password);
     if (password.length === 0) {
       setPasswordInvalid({
@@ -117,11 +95,13 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
       });
       return;
     }
+    setIsPasswordInputLoading(true);
     const validity = await User.validatePassword({ password }, [
       'isInvalid',
       'message',
     ]);
     setPasswordInvalid(validity);
+    setIsPasswordInputLoading(false);
   };
 
   useEffect(() => {
@@ -141,7 +121,7 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
     }
   }, [passwordState]);
 
-  const handleConfirmPasswordInvalidOnBlur = async (
+  const handleConfirmPasswordOnBlur = async (
     e: React.FocusEvent<HTMLInputElement>,
   ) => {
     const confirmPassword = e.target.value;
@@ -166,46 +146,61 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
     });
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // your login logic here
+    setIsSubmitButtonLoading(true);
+    if (
+      !usernameInvalid.isInvalid &&
+      !emailInvalid.isInvalid &&
+      !passwordInvalid.isInvalid &&
+      !confirmPasswordInvalid.isInvalid
+    ) {
+      // TODO
+    }
+  };
+
   return (
-    <form
-      onSubmit={(e: Record<string, any>) => {
-        e.preventDefault();
-        // your login logic here
-        if (
-          !usernameInvalid.isInvalid &&
-          !emailInvalid.isInvalid &&
-          !passwordInvalid.isInvalid &&
-          !confirmPasswordInvalid.isInvalid
-        ) {
-          // TODO
-        }
-      }}
-    >
+    <form onSubmit={async (e) => handleSubmit(e)}>
       <Stack spacing="4">
         <FormControl id="username" isInvalid={usernameInvalid.isInvalid}>
           <FormLabel>Username</FormLabel>
-          <Input
-            rounded={{ sm: 'none' }}
-            name="username"
-            type="text"
-            required
-            onBlur={async (e) => handleUsernameOnBlur(e)}
-          />
+          <InputGroup>
+            <Input
+              rounded={{ sm: 'none' }}
+              name="username"
+              type="text"
+              required
+              onBlur={async (e) => handleUsernameOnBlur(e)}
+            />
+            {isUsernameInputLoading && (
+              <InputRightElement>
+                <Spinner size="sm" color="teal.400" />
+              </InputRightElement>
+            )}
+          </InputGroup>
           <FormErrorMessage marginLeft="16px">
             {usernameInvalid.message}
           </FormErrorMessage>
         </FormControl>
         <FormControl id="email" isInvalid={emailInvalid.isInvalid}>
           <FormLabel>Email address</FormLabel>
-          <Input
-            rounded={{ sm: 'none' }}
-            borderButtom="2px"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            onBlur={async (e) => handleEmailOnBlur(e)}
-          />
+          <InputGroup>
+            <Input
+              rounded={{ sm: 'none' }}
+              borderButtom="2px"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              onBlur={async (e) => handleEmailOnBlur(e)}
+            />
+            {isEmailInputLoading && (
+              <InputRightElement>
+                <Spinner size="sm" color="teal.400" />
+              </InputRightElement>
+            )}
+          </InputGroup>
           <FormErrorMessage marginLeft="16px">
             {emailInvalid.message}
           </FormErrorMessage>
@@ -217,6 +212,7 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
           isInvalid={passwordInvalid.isInvalid}
           invalidMessage={passwordInvalid.message}
           onBlur={async (e) => handlePasswordOnBlur(e)}
+          isLoading={isPasswordInputLoading}
         />
         <PasswordField
           formLabel="Confirm Password"
@@ -224,9 +220,15 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
           ref={confirmPasswordRef}
           isInvalid={confirmPasswordInvalid.isInvalid}
           invalidMessage={confirmPasswordInvalid.message}
-          onBlur={async (e) => handleConfirmPasswordInvalidOnBlur(e)}
+          onBlur={async (e) => handleConfirmPasswordOnBlur(e)}
         />
-        <Button type="submit" colorScheme="blue" size="lg" fontSize="md">
+        <Button
+          type="submit"
+          colorScheme="blue"
+          size="lg"
+          fontSize="md"
+          isLoading={isSubmitButtonLoading}
+        >
           Sign up
         </Button>
       </Stack>

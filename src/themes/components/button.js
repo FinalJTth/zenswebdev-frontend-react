@@ -5,7 +5,7 @@ const buttonStyle = {
   }),
 
   sizes: {
-    noPadding: {},
+    default: {},
     sm: {
       fontSize: '12px',
       px: '10px',
@@ -113,6 +113,18 @@ const buttonStyle = {
 
     unstyled: (props) => ({
       fontWeight: (props && props.fontWeight) || 'normal',
+    }),
+
+    dragndrop: (props) => ({
+      backgroundColor: 'teal.200',
+      border: '1px',
+      borderColor: 'teal.300',
+      textColor: 'white',
+      fontSize: '18px',
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      align: 'center',
+      justify: 'center',
     }),
   },
   // The default size and variant values
