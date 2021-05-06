@@ -178,7 +178,7 @@ export async function uploadPicture(data: any) {
     .post('https://api.cloudinary.com/v1_1/zenesta/image/upload', fd)
     .then((res: AxiosResponse) => {
       console.log(res);
-      return res.data.query.secure_url;
+      return res.data.secure_url;
     });
   return url;
 }
@@ -202,6 +202,14 @@ export const useStateCallback = (initialState: any) => {
 
   return [state, setStateCallback];
 };
+
+export const toBase64 = (file: File) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
 
 export type Merge<A, B> = { [K in keyof A]: K extends keyof B ? B[K] : A[K] } &
   B extends infer O

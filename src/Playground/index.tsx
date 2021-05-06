@@ -27,6 +27,7 @@ import Dropzone, { useDropzone } from 'react-dropzone';
 import Promise from 'bluebird';
 import { observer } from 'mobx-react-lite';
 import { toJS } from 'mobx';
+import * as uuid from 'uuid';
 import { addToCart, checkout } from './api';
 import {
   axiosGqlQuery,
@@ -39,9 +40,11 @@ import {
   toGraphQLReturnString,
   buildGraphql,
   useStateCallback,
+  toBase64,
 } from '../utils';
 import { useStores } from '../stores';
-import { ClassifyPredictionsType } from '../stores/ClassifyModel';
+import { IClassifyPredictionsType } from '../stores/ClassifyModel';
+import PredictionsBox from './PredictionsBox';
 
 type PlaygroundProps = {
   test: string;
@@ -139,14 +142,6 @@ const Playground: React.FC<PlaygroundProps> = observer(
       mutation: '',
     });
 
-    const toBase64 = (file: File) =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-      });
-
     const onDrop = useCallback(async (acceptedFiles: Array<File>) => {
       // Do something with the files
       const pictures: Array<Record<string, any>> = [];
@@ -160,17 +155,19 @@ const Playground: React.FC<PlaygroundProps> = observer(
           return toBase64(acceptedFiles[index]);
         }),
       );
-      const defaultArray: Array<ClassifyPredictionsType> = Array.from(
+      const defaultArray: Array<IClassifyPredictionsType> = Array.from(
         { length: base64pictures.length },
         (current: any, index: number) => {
           return {
             picture: pictures[index],
-            predictions: [{}, {}, {}, {}, {}],
+            predictions: Array.from({ length: 5 }, () => ({
+              id: uuid.v4(),
+            })),
             isLoading: true,
           };
         },
       );
-      ClassifyModel.setPayloads(defaultArray);
+      ClassifyModel.setDatas(defaultArray);
       Promise.each(base64pictures, async (base64: any, index: number) => {
         const payload = await ClassifyModel.getPredictions(
           { inputImage: base64 },
@@ -181,7 +178,7 @@ const Playground: React.FC<PlaygroundProps> = observer(
           predictions: payload.predictions,
           isLoading: false,
         };
-        ClassifyModel.setPayloads(defaultArray);
+        ClassifyModel.setDatas(defaultArray);
       });
     }, []);
 
@@ -189,126 +186,7 @@ const Playground: React.FC<PlaygroundProps> = observer(
       onDrop,
     });
 
-    const classifyPredictions = ClassifyModel.getPayloads();
-
-    const renderPredictionBox = () => {
-      return classifyPredictions.map(
-        (classifyPrediction: ClassifyPredictionsType, index: number) => {
-          const { predictions, picture, isLoading } = classifyPrediction;
-          return (
-            predictions && (
-              <VStack
-                spacing="0px"
-                margin="2px"
-                rounded="lg"
-                maxWidth="700px"
-                minWidth="700px"
-                border="1px"
-                borderColor="teal.200"
-                boxShadow="md"
-              >
-                <Flex
-                  alignItems="left"
-                  backgroundColor="teal.100"
-                  borderBottom="1px"
-                  borderColor="teal.200"
-                  width="100%"
-                  height="40px"
-                >
-                  <Text
-                    fontFamily="Trebuchet MS"
-                    fontSize="16px"
-                    paddingLeft="17px"
-                    paddingTop="8px"
-                    marginBottom="10px"
-                    color="teal.600"
-                  >
-                    Name : {picture.name}
-                  </Text>
-                  <Spacer />
-                  <Text
-                    fontFamily="Trebuchet MS"
-                    fontSize="16px"
-                    paddingLeft="17px"
-                    paddingTop="8px"
-                    marginBottom="10px"
-                    color="teal.600"
-                    width="150px"
-                  >
-                    Size : {Number(picture.size) / 1000} kB
-                  </Text>
-                </Flex>
-                <HStack
-                  margin="2px"
-                  rounded="lg"
-                  maxWidth="700px"
-                  minWidth="700px"
-                  border="1px"
-                  borderTop="0px"
-                  borderColor="teal.200"
-                  boxShadow="md"
-                >
-                  <Image
-                    src={picture.url}
-                    height="224px"
-                    width="224px"
-                    rounded="lg"
-                    borderRight="1px"
-                    borderColor="teal.200"
-                  />
-                  <Box paddingLeft="10px" paddingRight="20px" width="100%">
-                    <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
-                          <Th fontSize="16px">ID</Th>
-                          <Th fontSize="16px">Object</Th>
-                          <Th isNumeric fontSize="16px">
-                            Confident
-                          </Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {predictions.map((result: Record<string, any>) => {
-                          return (
-                            <Tr>
-                              <Th
-                                width="130px"
-                                fontSize="14px"
-                                fontWeight="normal"
-                              >
-                                {isLoading ? (
-                                  <Skeleton height="16px" />
-                                ) : (
-                                  result.id
-                                )}
-                              </Th>
-                              <Th fontSize="14px" fontWeight="normal">
-                                {isLoading ? (
-                                  <Skeleton height="16px" />
-                                ) : (
-                                  result.object
-                                )}
-                              </Th>
-                              <Th isNumeric fontSize="14px" fontWeight="normal">
-                                {isLoading ? (
-                                  <Skeleton height="16px" width="100%" />
-                                ) : (
-                                  result.confident.toFixed(10)
-                                )}
-                              </Th>
-                            </Tr>
-                          );
-                        })}
-                      </Tbody>
-                    </Table>
-                  </Box>
-                </HStack>
-              </VStack>
-            )
-          );
-        },
-      );
-    };
+    const classifyPredictions = ClassifyModel.getDatas();
 
     enum Role {
       guest = 'enum_owner',
@@ -413,7 +291,7 @@ const Playground: React.FC<PlaygroundProps> = observer(
                 </Text>
               )}
             </Box>
-            {renderPredictionBox()}
+            <PredictionsBox items={classifyPredictions} />
           </VStack>
         </>
       );
@@ -431,5 +309,7 @@ const Playground: React.FC<PlaygroundProps> = observer(
     );
   },
 );
+
+Playground.displayName = 'Playground';
 
 export default Playground;

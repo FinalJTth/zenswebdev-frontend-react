@@ -11,26 +11,28 @@ import {
 } from 'mobx-state-tree';
 import localForage from 'localforage';
 import { persist } from 'mst-persist';
+import Promise from 'bluebird';
+import * as uuid from 'uuid';
 import { axiosGqlQuery, axiosGqlServiceQuery } from '../../api';
-import { buildGraphql } from '../../utils';
+import { buildGraphql, toBase64 } from '../../utils';
 
-interface IClassifyPredictionType {
+export interface IPredictionType {
   id?: string;
   object?: string;
   confident?: number;
 }
 
-interface IClassifyPictureType {
+export interface IClassifyPictureType {
   name?: string;
   size?: number;
   url?: string;
 }
 
-export type ClassifyPredictionsType = {
+export interface IClassifyPredictionsType {
   picture: IClassifyPictureType;
-  predictions: Array<IClassifyPredictionType>;
+  predictions: Array<IPredictionType>;
   isLoading: boolean;
-};
+}
 
 const Prediction = types.model('CPrediction', {
   id: types.maybe(types.string),
@@ -52,13 +54,13 @@ const Predictions = types.model('CPredictions', {
 
 const ClassifyModel = types
   .model('ClassifyModel', {
-    payloads: types.array(Predictions),
+    datas: types.array(Predictions),
   })
-  .actions((self) => ({
-    getPredictions: flow(function* getPredictions(
+  .actions((self) => {
+    const getPredictions = flow(function* getPredictions(
       parameters: Record<string, any> | string,
       returnValues?: Array<any> | string,
-    ): Generator<any, any, any> {
+    ) {
       return yield axiosGqlServiceQuery(
         'ClassifyImage',
         parameters,
@@ -75,18 +77,24 @@ const ClassifyModel = types
           );
           throw new Error(error.message.split('\n')[0]);
         });
-    }),
+    });
 
-    getPayloads() {
-      return self.payloads;
-    },
+    const getDatas = () => {
+      return self.datas;
+    };
 
-    setPayloads(payloads: Array<ClassifyPredictionsType>) {
-      self.payloads = cast([...payloads]);
-    },
-  }))
+    const setDatas = (datas: Array<IClassifyPredictionsType>) => {
+      self.datas = cast([...datas]);
+    };
+
+    return {
+      getPredictions,
+      getDatas,
+      setDatas,
+    };
+  })
   .create({
-    payloads: [],
+    datas: [],
   });
 
 export default ClassifyModel;
