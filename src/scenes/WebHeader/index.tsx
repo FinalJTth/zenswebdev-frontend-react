@@ -16,9 +16,11 @@ import {
   Spacer,
   Menu,
   MenuButton,
+  MenuDivider,
   MenuList,
   MenuItem,
   Portal,
+  useColorMode,
   useColorModeValue as mode,
 } from '@chakra-ui/react';
 import { observer } from 'mobx-react-lite';
@@ -32,7 +34,9 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
     const { User } = useStores();
     const history = useHistory();
 
-    const { profile } = User.getCurrentUser();
+    const { colorMode, toggleColorMode } = useColorMode();
+
+    const { profile, ...user } = User.getCurrentUser();
 
     const renderProfileMenu = () => {
       return (
@@ -42,8 +46,14 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
           placement="bottom-end"
           strategy="absolute"
         >
-          <MenuButton>
-            <Box display="flex" overflow="hidden" marginRight="5px">
+          <MenuButton
+            as={Button}
+            variant="profile"
+            size="default"
+            height="50px"
+            rounded="none"
+          >
+            <Box display="flex" overflow="hidden" alignItems="center">
               <Avatar
                 size="md"
                 name={
@@ -52,7 +62,19 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
                     : 'User'
                 }
                 src={profile.profilePicture}
+                transition="all 0.2s"
+                borderRadius="none"
               />
+              {/*
+              <Text
+                padding="18px"
+                fontWeight="semibold"
+                color="teal.200"
+                fontSize="18px"
+              >
+                {user.username}
+              </Text>
+              */}
             </Box>
           </MenuButton>
           <Portal>
@@ -60,6 +82,7 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
               <MenuItem onClick={() => history.push('/profile')}>
                 <Text>Profile</Text>
               </MenuItem>
+              <MenuDivider />
               <MenuItem
                 onClick={() => {
                   User.logout();
@@ -86,6 +109,7 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
             rounded={{ sm: 'none' }}
             height="51px"
             onClick={() => history.push('/signup')}
+            backgroundColor={mode('teal.600', 'teal.900')}
           >
             Getting Started
           </Button>
@@ -99,14 +123,13 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
         minW="100%"
         h="50px"
         minHeight="50px"
-        bg="teal.700"
+        backgroundColor={mode('teal.700', 'teal.1000')}
         borderBottomWidth="2px"
-        borderColor="#2C5282"
+        borderColor={mode('blue.600', 'blue.900')}
         boxShadow="lg"
         position="sticky"
         alignItems="center"
         zIndex="1"
-        overflow="hidden"
       >
         <Link href="/">
           <Button variant="unstyled" marginLeft="20px">
@@ -119,6 +142,9 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
           </Button>
         </Link>
         <Spacer />
+        <Button variant="linkHeader" onClick={toggleColorMode}>
+          Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
+        </Button>
         {User.isAuthenticated ? renderProfileMenu() : renderButtonForGuest()}
       </Flex>
     );

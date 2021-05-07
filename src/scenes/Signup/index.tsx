@@ -9,11 +9,14 @@ import {
 } from '@chakra-ui/react';
 import * as React from 'react';
 import { FaFacebook, FaGoogle, FaGithub } from 'react-icons/fa';
+import { useHistory } from 'react-router-dom';
 import Logo from '../../components/Logo';
 import SignupForm from './SignupForm';
 import DividerWithText from '../../components/DividerWithText';
 
 export const Register: React.FC<any> = (): JSX.Element => {
+  const history = useHistory();
+
   return (
     <Box
       bg={mode('gray.50', 'inherit')}
@@ -38,10 +41,11 @@ export const Register: React.FC<any> = (): JSX.Element => {
           <Box
             as="a"
             marginStart="1"
-            href="/login"
             color={mode('blue.600', 'blue.200')}
             _hover={{ color: 'blue.600' }}
             display={{ base: 'block', sm: 'revert' }}
+            style={{ cursor: 'pointer' }}
+            onClick={() => history.push('/login')}
           >
             Login
           </Box>

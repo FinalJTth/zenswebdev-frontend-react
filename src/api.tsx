@@ -8,7 +8,7 @@ const success = dotenv.config();
 console.warn(success);
 
 const serverBaseUrl = 'https://localhost:9000/';
-const serverServiceUrl = 'https://localhost:5000';
+const serverServiceUrl = 'https://localhost:5000/';
 
 export const axiosBaseURL = axios.create({
   baseURL: serverBaseUrl,

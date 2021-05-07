@@ -26,21 +26,28 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // your login logic here
+    let isInvalid;
     const target = e.target as typeof e.target & {
       email: { value: string };
       password: { value: string };
     };
+    await User.login({
+      email: target.email.value,
+      password: target.password.value,
+    }).catch((error) => {
+      if (error.message.includes('Email')) {
+        setEmailInvalid(true);
+        isInvalid = true;
+      }
+      if (error.message.includes('Password')) {
+        setPasswordInvalid(true);
+        isInvalid = true;
+      }
+    });
+    if (isInvalid) {
+      return false;
+    }
     try {
-      await User.login({
-        email: target.email.value,
-        password: target.password.value,
-      }).catch((error) => {
-        if (error.message.includes('Email')) {
-          setEmailInvalid(true);
-        } else if (error.message.includes('Password')) {
-          setPasswordInvalid(true);
-        }
-      });
       const [user] = await User.getUserByQuery(
         {
           email: target.email.value,
@@ -66,8 +73,8 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
     } catch (error) {
       console.error(error);
       return submitToast({
-        title: 'Signup error.',
-        description: 'Something went wrong while trying to signup',
+        title: 'Login error.',
+        description: `${error}`,
         status: 'error',
         duration: 9000,
         isClosable: true,

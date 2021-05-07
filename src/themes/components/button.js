@@ -63,10 +63,10 @@ const buttonStyle = {
     },
 
     solid: (props) => ({
-      bg: props.bg || 'teal.500',
+      bg: props.colorMode === 'light' ? 'teal.500' : 'teal.600',
       color: props.color || 'white',
       rounded: props.rounded || { sm: 'md' },
-      _hover: { bg: 'teal.600' },
+      _hover: { bg: props.colorMode === 'light' ? 'teal.600' : 'teal.700' },
       _focus: {
         boxShadow:
           '0 0 1px 2px rgba(88, 144, 144, .75), 0 1px 1px rgba(0, 0, 0, .15)',
@@ -75,24 +75,25 @@ const buttonStyle = {
         borderWidth: '0px',
       },
       _active: {
-        bg: 'teal.700',
+        bg: props.colorMode === 'light' ? 'teal.700' : 'teal.800',
       },
     }),
 
-    ghost: {
-      color: 'teal.500',
+    ghost: (props) => ({
+      color: props.colorMode === 'light' ? 'teal.500' : 'teal.600',
       _hover: { bg: '' },
       _focus: {
-        boxShadow:
-          '0 0 1px 2px rgba(88, 144, 144, .75), 0 1px 1px rgba(0, 0, 0, .15)',
-        bg: 'rgba(178, 245, 234, 0.1)',
-        borderColor: 'teal.500',
+        boxShadow: 'outline',
+        bg: 'teal.600',
+        borderColor: 'teal.900',
         borderWidth: '0px',
       },
       _active: {
-        bg: 'rgba(129, 230, 217, 0.3)',
+        bg: props.colorMode === 'light' ? 'teal.700' : 'teal.800',
       },
-    },
+      _expanded: { bg: props.colorMode === 'light' ? 'teal.500' : 'teal.700' },
+      transition: 'all 0.2s',
+    }),
 
     link: (props) => ({
       fontWeight: (props && props.fontWeight) || 'normal',
@@ -111,14 +112,31 @@ const buttonStyle = {
       },
     }),
 
+    profile: (props) => ({
+      color: props.colorMode === 'light' ? 'teal.500' : 'teal.600',
+      _hover: { bg: '' },
+      _focus: {
+        boxShadow:
+          '0 0 1px 2px rgba(88, 144, 144, .75), 0 1px 1px rgba(0, 0, 0, .15)',
+        bg: props.colorMode === 'light' ? 'teal.700' : 'teal.800',
+        borderColor: props.colorMode === 'light' ? 'teal.800' : 'teal.900',
+        borderWidth: '0px',
+      },
+      _active: {
+        bg: props.colorMode === 'light' ? 'teal.800' : 'teal.900',
+      },
+      _expanded: { bg: props.colorMode === 'light' ? 'teal.600' : 'teal.700' },
+      transition: 'all 0.2s',
+    }),
+
     unstyled: (props) => ({
       fontWeight: (props && props.fontWeight) || 'normal',
     }),
 
     dragndrop: (props) => ({
-      backgroundColor: 'teal.200',
+      backgroundColor: props.colorMode === 'light' ? 'teal.200' : 'teal.700',
       border: '1px',
-      borderColor: 'teal.300',
+      borderColor: props.colorMode === 'light' ? 'teal.300' : 'teal.800',
       textColor: 'white',
       fontSize: '18px',
       overflowY: 'auto',

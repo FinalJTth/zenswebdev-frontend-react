@@ -8,7 +8,7 @@ import globalStyles from './globalStyle';
 import Button from './components/button';
 import Input from './components/input';
 
-const overrides = {
+export const overrides = {
   styles: {
     globalStyles,
   },
@@ -19,6 +19,10 @@ const overrides = {
     Input,
     // Other components go here
   },
+  initialColorMode: 'light',
+  useSystemColorMode: false,
 };
 
-export default extendTheme(overrides);
+const theme = extendTheme(overrides);
+
+export default theme;

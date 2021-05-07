@@ -12,6 +12,7 @@ import {
   Text,
   Textarea,
   VStack,
+  useColorModeValue as mode,
   useToast,
 } from '@chakra-ui/react';
 import JSON5 from 'json5';

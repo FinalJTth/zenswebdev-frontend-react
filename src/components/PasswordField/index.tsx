@@ -100,6 +100,7 @@ const PasswordField = React.forwardRef<HTMLInputElement, IPasswordFieldProps>(
             autoComplete="current-password"
             required
             onBlur={props.onBlur}
+            size={props.size}
           />
         </InputGroup>
         <FormErrorMessage marginLeft="16px">

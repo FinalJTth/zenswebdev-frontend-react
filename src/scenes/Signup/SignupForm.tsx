@@ -212,7 +212,6 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
             ...to,
           },
         });
-        User.setIsAuthenticated(true);
         history.push('/');
       } catch (error) {
         console.error(error);
