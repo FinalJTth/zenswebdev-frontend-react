@@ -26,6 +26,7 @@
     "dotenv": "^8.2.0",
     "dotenv-webpack": "^7.0.2",
     "framer-motion": "4",
+    "fs": "^0.0.1-security",
     "json5": "^2.2.0",
     "localforage": "^1.9.0",
     "mobx": "^6.1.8",

@@ -180,7 +180,7 @@ const LoginForm: React.FC<any> = (): JSX.Element => {
               username,
               email,
               password,
-              role: RoleInput.guest,
+              role: RoleInput.user,
               profile: {
                 firstName: '',
                 lastName: '',

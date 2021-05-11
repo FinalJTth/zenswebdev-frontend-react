@@ -2,7 +2,13 @@ import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import localForage from 'localforage';
 import * as dotenv from 'dotenv';
 import JSON5 from 'json5';
+import * as https from 'https';
+import * as fs from 'fs';
 import { buildGraphql } from './utils';
+
+const httpsAgent = new https.Agent({
+  rejectUnauthorized: false,
+});
 
 const success = dotenv.config();
 console.warn(success);
@@ -12,10 +18,12 @@ const serverServiceUrl = 'https://localhost:5000/';
 
 export const axiosBaseURL = axios.create({
   baseURL: serverBaseUrl,
+  httpsAgent,
 });
 
 export const axiosServiceURL = axios.create({
   baseURL: serverServiceUrl,
+  httpsAgent,
 });
 
 axiosBaseURL.interceptors.request.use(

@@ -1,18 +1,12 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import {
+  useState,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+  useEffect,
+} from 'react';
 import axios, { AxiosResponse } from 'axios';
 import JSON5 from 'json5';
-
-const graphQLParamMap = JSON5.parse(`{ "'": '"', ':': ': ', ',': ' '}`);
-
-/*
-export const toGraphQLParameterString = (obj: Record<string, any>): string => {
-  const regex = new RegExp(Object.keys(graphQLParamMap).join('|'), 'gi');
-  const str = JSON5.stringify(obj);
-  return str
-    .substring(1, str.length - 1)
-    .replace(regex, (matched) => graphQLParamMap[matched]);
-};
-*/
 
 export const toGraphQLReturnString = (
   obj: Array<string | Record<string, any>>,
@@ -76,7 +70,7 @@ const stringifyValue = (value: any, nextValue?: any): string => {
   else if (value instanceof Array) {
     let tstr2 = ``;
     value.forEach((value2: any, index: number) => {
-      const nextValue2 = value2[index + 1];
+      const nextValue2 = value[index + 1];
       tstr2 += `${stringifyValue(value2)}${nextValue2 ? ', ' : ''}`;
     });
     tstr = `[${tstr2}]`;
@@ -84,10 +78,7 @@ const stringifyValue = (value: any, nextValue?: any): string => {
   return `${tstr.substring(0, tstr.length)}${nextValue ? ' ' : ''}`;
 };
 
-export const toGraphQLParameterString = (
-  obj: Record<string, any>,
-  recursive?: boolean,
-) => {
+export const toGraphQLParameterString = (obj: Record<string, any>) => {
   const entries = Object.entries(obj);
   let params = ``;
   entries.forEach((entry: Array<any>, index: number) => {
@@ -157,6 +148,19 @@ export const useStateCallback = (initialState: any) => {
   return [state, setStateCallback];
 };
 
+export const useWindowSize = () => {
+  const [size, setSize] = useState([0, 0]);
+  useLayoutEffect(() => {
+    function updateSize() {
+      setSize([window.innerWidth, window.innerHeight]);
+    }
+    window.addEventListener('resize', updateSize);
+    updateSize();
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+  return size;
+};
+
 export const toBase64 = (file: File) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -164,6 +168,14 @@ export const toBase64 = (file: File) =>
     reader.onload = () => resolve(reader.result);
     reader.onerror = (error) => reject(error);
   });
+
+export function getEnumKeyByEnumValue<T extends { [index: string]: string }>(
+  myEnum: T,
+  enumValue: string | null,
+): keyof T {
+  const keys = Object.keys(myEnum).filter((x) => myEnum[x] === enumValue);
+  return keys.length > 0 ? keys[0] : '';
+}
 
 export type Merge<A, B> = { [K in keyof A]: K extends keyof B ? B[K] : A[K] } &
   B extends infer O

@@ -7,6 +7,7 @@ import {
   Button,
   Divider,
   Flex,
+  FormControl,
   Grid,
   GridItem,
   Heading,
@@ -105,12 +106,12 @@ const Profile: React.FC = observer(() => {
               <Box align="center">
                 <Flex
                   mt="8"
-                  width={356}
-                  height={356}
+                  width={360}
+                  height={360}
                   backgroundColor="white"
                   border="2px"
-                  borderColor={mode('teal.300', 'teal.600')}
-                  shadow="md"
+                  borderColor={mode('white', 'gray.600')}
+                  shadow="lg"
                   align="center"
                   justify="center"
                   {...getRootProps()}
@@ -193,7 +194,11 @@ const Profile: React.FC = observer(() => {
       py="12"
       px={{ sm: '6', lg: '8' }}
     >
-      <Box maxW={{ sm: 'xl' }} mx={{ sm: 'auto' }} w={{ sm: 'full' }}>
+      <Box
+        maxW={{ sm: 'md', md: 'lg', lg: 'xl' }}
+        mx={{ sm: 'auto' }}
+        w={{ sm: 'full' }}
+      >
         <Heading mt="6" textAlign="left" size="md" fontWeight="semibold">
           Account settings
         </Heading>
@@ -208,7 +213,12 @@ const Profile: React.FC = observer(() => {
           Manage your account settings and more
         </Text>
       </Box>
-      <Box maxW={{ sm: 'xl' }} mx={{ sm: 'auto' }} mt="8" w={{ sm: 'full' }}>
+      <Box
+        maxW={{ sm: 'md', md: 'lg', lg: 'xl' }}
+        mx={{ sm: 'auto' }}
+        mt="8"
+        w={{ sm: 'full' }}
+      >
         <Box
           bg={mode('white', 'gray.700')}
           py="8"
@@ -231,7 +241,7 @@ const Profile: React.FC = observer(() => {
           </Text>
           <HStack spacing={4} mt={8} align="left">
             <Avatar
-              size="md"
+              size="xl"
               name={
                 `${profile.firstName} ${profile.lastName}`.length === 0
                   ? `${profile.firstName} ${profile.lastName}`
@@ -271,7 +281,7 @@ const Profile: React.FC = observer(() => {
           </Button>
           <Divider mt={5} />
           <Heading mt={5} textAlign="left" size="xs" fontWeight="semibold">
-            Login informations
+            Login information
           </Heading>
           <Text
             color={mode('teal.900', 'teal.400')}
@@ -282,23 +292,42 @@ const Profile: React.FC = observer(() => {
             fontWeight="none"
             lineHeight="0"
           >
-            Change your email and password
+            Enter your old password to change any information
           </Text>
-          <Flex>
-            <VStack spacing={3} align="left" width="40%">
+          <HStack mt={8} align="left" spacing={8}>
+            <VStack spacing={3} align="left" width="50%">
               <Text
                 color={mode('teal.900', 'teal.400')}
                 fontSize="sm"
-                mt={8}
                 maxW="md"
                 fontWeight="none"
                 lineHeight="0"
               >
-                Password Field
+                Old password
               </Text>
               <Box>
                 <Input
                   name="password"
+                  placeholder="Old password"
+                  type={isOpen ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  size="sm"
+                />
+              </Box>
+              <Text
+                color={mode('teal.900', 'teal.400')}
+                fontSize="sm"
+                maxW="md"
+                fontWeight="none"
+                lineHeight="0"
+              >
+                New password
+              </Text>
+              <Box>
+                <Input
+                  name="password"
+                  placeholder="New password"
                   type={isOpen ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
@@ -306,55 +335,57 @@ const Profile: React.FC = observer(() => {
                 />
                 <Input
                   name="confirmpassword"
+                  placeholder="Confirm password"
                   type={isOpen ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
                   borderTop="0"
                   size="sm"
                 />
+                <Button
+                  variant="solid"
+                  fontWeight="normal"
+                  size="sm"
+                  mt={5}
+                  onClick={onOpen}
+                >
+                  Change password
+                </Button>
               </Box>
             </VStack>
             <VStack ml={5} align="left" width="60%">
               <Text
                 color={mode('teal.900', 'teal.400')}
                 fontSize="sm"
-                mt={8}
                 maxW="md"
                 fontWeight="none"
                 lineHeight="0"
                 pb={1}
+                mt="88px"
               >
                 Email Field
               </Text>
-              <Input
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                size="sm"
-                value={user.email}
-              />
+              <Box>
+                <Input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  size="sm"
+                  defaultValue={user.email}
+                />
+                <Button
+                  variant="solid"
+                  fontWeight="normal"
+                  size="sm"
+                  mt={5}
+                  onClick={onOpen}
+                >
+                  Change email
+                </Button>
+              </Box>
             </VStack>
-          </Flex>
-          <Button
-            variant="solid"
-            fontWeight="normal"
-            size="sm"
-            mt={5}
-            onClick={onOpen}
-          >
-            Change password
-          </Button>
-          <Button
-            ml={2}
-            variant="solid"
-            fontWeight="normal"
-            size="sm"
-            mt={5}
-            onClick={onOpen}
-          >
-            Change email
-          </Button>
+          </HStack>
         </Box>
       </Box>
       {renderModal()}

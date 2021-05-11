@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useRef } from 'react';
 import { Link as ReactLink, useHistory } from 'react-router-dom';
 import {
   Avatar,
@@ -26,6 +27,7 @@ import {
 import { observer } from 'mobx-react-lite';
 import Logo from '../../components/Logo';
 import { useStores } from '../../stores';
+import { useWindowSize } from '../../utils';
 
 type WebHeaderProps = any;
 
@@ -34,9 +36,15 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
     const { User } = useStores();
     const history = useHistory();
 
+    const rightButtonGroupGuest = useRef<HTMLDivElement | null>(null);
+
     const { colorMode, toggleColorMode } = useColorMode();
 
     const { profile, ...user } = User.getCurrentUser();
+
+    const [width, height] = useWindowSize();
+
+    const defaultRightButtonWidth = 200;
 
     const renderProfileMenu = () => {
       return (
@@ -82,6 +90,9 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
               <MenuItem onClick={() => history.push('/profile')}>
                 <Text>Profile</Text>
               </MenuItem>
+              <MenuItem onClick={toggleColorMode}>
+                <Text>Toggle {colorMode === 'light' ? 'Dark' : 'Light'}</Text>
+              </MenuItem>
               <MenuDivider />
               <MenuItem
                 onClick={() => {
@@ -97,12 +108,29 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
       );
     };
 
-    const renderButtonForGuest = () => {
+    const responsiveRightButtonGroup = () => {
+      if (defaultRightButtonWidth - width <= -328) {
+        return (
+          <>
+            <Button variant="linkHeader" onClick={() => history.push('/login')}>
+              Sign In
+            </Button>
+            <Button
+              variant="solid"
+              size="lg"
+              rounded={{ sm: 'none' }}
+              height="51px"
+              onClick={() => history.push('/signup')}
+              backgroundColor={mode('teal.600', 'teal.900')}
+            >
+              Getting Started
+            </Button>
+          </>
+        );
+      }
+
       return (
-        <HStack spacing="20px">
-          <Button variant="linkHeader" onClick={() => history.push('/login')}>
-            Sign In
-          </Button>
+        <>
           <Button
             variant="solid"
             size="lg"
@@ -113,6 +141,14 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
           >
             Getting Started
           </Button>
+        </>
+      );
+    };
+
+    const renderButtonForGuest = () => {
+      return (
+        <HStack ref={rightButtonGroupGuest} spacing="20px">
+          {responsiveRightButtonGroup()}
         </HStack>
       );
     };
@@ -142,9 +178,6 @@ const WebHeader: React.FC<WebHeaderProps> = observer(
           </Button>
         </Link>
         <Spacer />
-        <Button variant="linkHeader" onClick={toggleColorMode}>
-          Toggle {colorMode === 'light' ? 'Dark' : 'Light'}
-        </Button>
         {User.isAuthenticated ? renderProfileMenu() : renderButtonForGuest()}
       </Flex>
     );

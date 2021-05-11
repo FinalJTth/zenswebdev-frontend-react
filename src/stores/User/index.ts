@@ -1,11 +1,37 @@
-import { types, flow, cast, Instance } from 'mobx-state-tree';
+import { types, flow, cast, Instance, getSnapshot } from 'mobx-state-tree';
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  GridItem,
+  HStack,
+  Image,
+  Input,
+  Text,
+  Textarea,
+  VStack,
+  Skeleton,
+  Spacer,
+  StackProps,
+  Table,
+  TableCaption,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Tfoot,
+} from '@chakra-ui/react';
 import localForage from 'localforage';
 import { persist } from 'mst-persist';
+import { toJS } from 'mobx';
+import { createViewModel } from 'mobx-utils';
 import {
   axiosGqlQuery,
   axiosGqlMutation,
   axiosGqlServiceQuery,
 } from '../../api';
+import { getEnumKeyByEnumValue } from '../../utils';
 
 export interface IUserProfile {
   profileId: string;
@@ -21,6 +47,20 @@ export interface IUser {
   email: string;
   role: Role;
   profile: IUserProfile;
+}
+
+export interface IUserEnumAsString {
+  userId: string;
+  username: string;
+  email: string;
+  role: string;
+  profile: IUserProfile;
+}
+
+export interface IUserSearchResults {
+  user: Array<IUser>;
+  email: Array<IUser>;
+  role: Array<IUser>;
 }
 
 export enum Role {
@@ -42,7 +82,7 @@ const UserProfile = types.model('UserProfile', {
   firstName: types.string,
   lastName: types.string,
   sex: types.string,
-  profilePicture: types.maybe(types.string),
+  profilePicture: types.string,
 });
 
 const UserData = types.model('UserData', {
@@ -59,12 +99,21 @@ const UserData = types.model('UserData', {
   }),
 });
 
+const UserSearchResults = types.model('UserSearchResults', {
+  user: types.array(UserData),
+  email: types.array(UserData),
+  role: types.array(UserData),
+});
+
 interface IUserMST extends Instance<typeof UserData> {}
 interface IUserProfileMST extends Instance<typeof UserProfile> {}
+interface IUserSearchResultsMST extends Instance<typeof UserSearchResults> {}
 
 const UserModel = types
   .model('UserModel', {
     usersContainer: types.array(UserData),
+    usersSearchResults: types.maybe(UserSearchResults),
+    searchInput: types.maybe(types.string),
     currentUser: UserData,
     isAuthenticated: types.boolean,
   })
@@ -72,6 +121,12 @@ const UserModel = types
     // GETTER
     const getUsersContainer = (): Array<IUserMST> => {
       return self.usersContainer;
+    };
+    const getUsersSearchResults = (): IUserSearchResultsMST | undefined => {
+      return self.usersSearchResults;
+    };
+    const getSearchInput = (): string | undefined => {
+      return self.searchInput;
     };
     const getCurrentUser = (): IUserMST => {
       return self.currentUser;
@@ -86,6 +141,12 @@ const UserModel = types
     const setUsersContainer = (users: Array<IUser>) => {
       self.usersContainer = cast(users);
     };
+    const setUsersSearchResults = (results: IUserSearchResults | undefined) => {
+      self.usersSearchResults = cast(results);
+    };
+    const setSearchInput = (searchInput: string) => {
+      self.searchInput = searchInput;
+    };
     const setCurrentUser = (user: IUser) => {
       self.currentUser = user;
     };
@@ -98,13 +159,47 @@ const UserModel = types
 
     return {
       getUsersContainer,
+      getUsersSearchResults,
+      getSearchInput,
       getCurrentUser,
       getIsAuthenticated,
       getCurrentUserProfile,
       setUsersContainer,
+      setUsersSearchResults,
+      setSearchInput,
       setCurrentUser,
       setIsAuthenticated,
       setCurrentUserProfile,
+    };
+  })
+  .views((self) => {
+    const mapSearchResultByField = () => {
+      const userCategory: Array<IUser> = [];
+      const emailCategory: Array<IUser> = [];
+      const roleCategory: Array<IUser> = [];
+      const re = new RegExp(`${toJS(self.getSearchInput())}`);
+      const usersContainer = toJS(self.getUsersContainer());
+      usersContainer.forEach((user) => {
+        if (re.test(user.username)) {
+          userCategory.push(user);
+        }
+        if (re.test(user.email)) {
+          emailCategory.push(user);
+        }
+        if (re.test(user.role)) {
+          roleCategory.push(user);
+        }
+      });
+      const results: IUserSearchResults = {
+        user: userCategory,
+        email: emailCategory,
+        role: roleCategory,
+      };
+      return results;
+    };
+
+    return {
+      mapSearchResultByField,
     };
   })
   .actions((self) => {
@@ -119,6 +214,39 @@ const UserModel = types
         })
         .catch(() => {
           console.error('Error occured while getting user info');
+        });
+    });
+
+    const updateUserByMutation = flow(function* getUserByToken(
+      parameters: Record<string, any> | string,
+      returnValues?: Array<any> | string,
+    ): Generator<any, any, any> {
+      return yield axiosGqlMutation('UpdateUser', parameters, returnValues)
+        .then(async (res: { data: Record<string, any> }) => {
+          console.log('UpdateUser', res);
+          return res.data.query;
+        })
+        .catch((error) => {
+          console.error('Error occured while updating a user\n', error.message);
+          throw new Error(error.message.split('\n')[0]);
+        });
+    });
+
+    const updateProfileByMutation = flow(function* getUserByToken(
+      parameters: Record<string, any> | string,
+      returnValues?: Array<any> | string,
+    ): Generator<any, any, any> {
+      return yield axiosGqlMutation('UpdateProfile', parameters, returnValues)
+        .then(async (res: { data: Record<string, any> }) => {
+          console.log('UpdateProfile', res);
+          return res.data.query;
+        })
+        .catch((error) => {
+          console.error(
+            "Error occured while updating a user's Profile\n",
+            error.message,
+          );
+          throw new Error(error.message.split('\n')[0]);
         });
     });
 
@@ -279,22 +407,57 @@ const UserModel = types
 
     return {
       getUserByQuery,
+      updateUserByMutation,
+      updateProfileByMutation,
       login,
       logout,
       signup,
       validateUsername,
       validateEmail,
       validatePassword,
+    };
+  })
+  .actions((self) => {
+    return {
       afterCreate: async () => {
         const token = await localForage.getItem('access_token');
         if (token) {
-          self.setIsAuthenticated(true);
+          self
+            .getUserByQuery({ token }, [
+              'userId',
+              'username',
+              'email',
+              'role',
+              {
+                profile: [
+                  'profileId',
+                  'firstName',
+                  'lastName',
+                  'sex',
+                  'profilePicture',
+                ],
+              },
+            ])
+            .then((res) => {
+              self.setIsAuthenticated(true);
+              self.setCurrentUser(res.data.query);
+            })
+            .catch(async (error) => {
+              if (/expired/.test(error.message)) {
+                await localForage.removeItem('access_token');
+              }
+            });
         }
       },
     };
   })
   .create({
     usersContainer: [],
+    usersSearchResults: {
+      user: [],
+      email: [],
+      role: [],
+    },
     currentUser: {
       userId: '',
       username: '',
